@@ -271,23 +271,23 @@ function connect(socket) {
     socket.broadcast.emit('drop', {
       id: user.id
     });
-  })
+  });
 
   socket.on('chat', function(data){
-    if(!data.msg) return;
-
-    if(data.msg.indexOf('/setNick ') === 0){
-      var oldNick = user.nickname || user.id;
-      var newNick = data.msg.replace('/setNick ', '');
-      data.msg = oldNick + ' is now known as ' + newNick;
-      user.nickname = newNick;
-      return socket.broadcast.emit('msg', msg);
-    }
+    if (!data.msg) return;
 
     var msg = {
       id: user.id,
       msg: data.msg
     };
+
+    if (msg.msg.indexOf('/setNick ') === 0){
+      var oldNick = user.nickname || user.id;
+      var newNick = msg.msg.replace('/setNick ', '');
+      msg.msg = oldNick + ' is now known as ' + newNick;
+      user.nickname = newNick;
+      return socket.broadcast.emit('msg', msg);
+    }
 
     socket.emit('msg', msg);
     socket.broadcast.emit('msg', msg);

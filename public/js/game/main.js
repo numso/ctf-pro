@@ -252,7 +252,7 @@ function setStartCoords(team, isNew) {
 
   if (isNew) {
     var nick = names[Math.floor(Math.random() * names.length)];
-    socket.emit('chat', { msg: '/setNic ' + nick });
+    socket.emit('chat', { msg: '/setNick ' + nick });
   }
 }
 
