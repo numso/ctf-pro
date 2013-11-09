@@ -2,9 +2,5 @@
 'use strict';
 
 module.exports = function (app) {
-  app.get('/test', test);
+  //Nothing yet
 };
-
-function test(req, res) {
-  res.send('it works');
-}
