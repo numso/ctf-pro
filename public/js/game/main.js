@@ -113,14 +113,37 @@ function animate() {
 
 function playerMovement(inputs) {
   var moved = false;
-  if (inputs[37] && move(1, 0))  moved = true;
-  if (inputs[39] && move(-1, 0)) moved = true;
-  if (inputs[38] && move(0, 1))  moved = true;
-  if (inputs[40] && move(0, -1)) moved = true;
+  var desiredRot = 0;
+  if (inputs[37] && move(1, 0, Math.PI)) {
+    moved = true;
+    desiredRot = Math.PI;
+  }
+  else if (inputs[39] && move(-1, 0, 0)) {
+    moved = true;
+    desiredRot = 2 * Math.PI;
+  }
+
+  if (inputs[38] && move(0, 1, Math.PI * 3 / 2)) {
+    moved = true;
+    if (!desiredRot)
+      desiredRot = 3 * Math.PI / 2;
+    else
+      desiredRot = (desiredRot + 3 * Math.PI / 2) / 2;
+  }
+  else if (inputs[40] && move(0, -1, Math.PI / 2)) {
+    moved = true;
+    if (!desiredRot)
+      desiredRot = Math.PI / 2;
+    else {
+      desiredRot += Math.PI / 2;
+      desiredRot %= 2 * Math.PI;
+      desiredRot /= 2;
+    }
+  }
 
   var fn = moved ? 'play' : 'stop';
   player[fn]();
-  rotate(0);
+  rotate(desiredRot);
 }
 
 function move(x, y) {
@@ -152,7 +175,20 @@ function collides(obj, player, offsetX, offsetY) {
 };
 
 function rotate(desiredRot) {
-  player.rotation = desiredRot;
+  if (!desiredRot || desiredRot === player.rotation) return;
+
+  var playRot = toDegrees(player.rotation);
+  var desiRot = toDegrees(desiredRot);
+
+  var diff = playRot - desiRot;
+  var change = diff < 0 ? 1 : -1;
+  if (Math.abs(diff) > 180) change = 0 - change;
+  player.rotation += change * Math.PI / 40;
+}
+
+function toDegrees(rad) {
+  var val = (rad * (180 / Math.PI)) % 360;
+  return (val + 360) % 360;
 }
 
 window.addEventListener('keydown', function (e) {
