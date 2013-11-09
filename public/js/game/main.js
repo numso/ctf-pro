@@ -317,7 +317,7 @@ function startIO() {
   socket = io.connect();
 
   socket.on('conn', function (data) {
-    intro.play();
+    playMusic(false);
     console.log(data);
     gameInProgress = data.go;
     if (!gameInProgress) {
@@ -358,8 +358,7 @@ function startIO() {
   });
 
   socket.on('go', function () {
-    intro.stop();
-    gameMusic.play();
+    playMusic(true);
     $('#countdown').text('GO!!');
     setTimeout(function () {
       $('#countdown').text('');
@@ -386,6 +385,16 @@ function startIO() {
       newNicks[data.id] = data.nick;
     }
   });
+}
+
+function playMusic(flag) {
+  if (flag) {
+    intro.stop();
+    gameMusic.play()
+  } else {
+    intro.play();
+    gameMusic.stop()
+  }
 }
 
 function sendCoords(x, y) {
