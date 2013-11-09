@@ -12,11 +12,9 @@ var    http = require('http'),
 
 var app = express();
 
-console.log(process.env.port);
-console.log(config);
-console.log(app.get('env'));
+var port = app.get('env') === 'production' ? 80 : 3000;
 
-app.set('port', process.env.PORT || config.port || 3000);
+app.set('port', port);
 
 var sessOptions = config.sessOptions;
 
