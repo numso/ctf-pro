@@ -123,7 +123,7 @@ function getID(){
 }
 
 function assignTeam(){
-  if(_.keys(teams.a).length < _.keys(teams.b).length){
+  if(_.keys(teams.a.users).length < _.keys(teams.b.users).length){
     return 'a';
   } else {
     return 'b';
