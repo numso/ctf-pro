@@ -72,3 +72,8 @@ including:
 
 If you have any issues, we're on IRC in #nodeknockout on freenode, email us at
 <help@nodeknockout.com>, or tweet [@node_knockout](https://twitter.com/node_knockout).
+
+
+
+## Credits
+Music - http://www.youtube.com/watch?v=S5YeoYFFn6o&list=PLD16BD924E3FFC820
