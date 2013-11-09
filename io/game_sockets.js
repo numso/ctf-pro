@@ -82,6 +82,7 @@ function gameleft(togo){ //togo is minutes
 }
 
 function stopGame(){
+  clearTimeout(currTimeout);
   game.started = false;
   game.countdown = false;
   mainIO.sockets.emit('stop', game);
@@ -123,7 +124,7 @@ function getID(){
 }
 
 function assignTeam(){
-  if(_.keys(teams.a).length < _.keys(teams.b).length){
+  if(_.keys(teams.a.users).length < _.keys(teams.b.users).length){
     return 'a';
   } else {
     return 'b';
@@ -168,7 +169,6 @@ function connect(socket) {
     });
 
     if(--game.active < 2){
-      clearTimeout(currTimeout);
       stopGame();
     }
 
@@ -216,7 +216,6 @@ function connect(socket) {
     };
 
     if(teams[team].points === 3){
-      clearTimeout(currTimeout);
       stopGame();
     }
 
