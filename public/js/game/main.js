@@ -31,6 +31,8 @@ function loadGame() {
   player = createPlayer();
   stage.addChild(player);
 
+  startIO();
+
   requestAnimationFrame(animate);
 }
 
@@ -170,3 +172,24 @@ window.addEventListener('keydown', function (e) {
 window.addEventListener('keyup', function (e) {
   inputs[e.keyCode] = false;
 });
+
+function startIO() {
+  console.log('connecting');
+  var socket = io.connect();
+  console.log('connected');
+  socket.on('conn', function (data) {
+    console.log(data);
+  });
+
+  socket.on('new', function (data) {
+    console.log(data);
+  });
+
+  socket.on('countdown', function (data) {
+    console.log(data);
+  });
+
+  socket.on('go', function (data) {
+    console.log(data);
+  });
+}
