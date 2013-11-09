@@ -1,0 +1,20 @@
+{"frames": [
+
+{
+	"filename": "Halo_RPG_Spartan_Assault_Rifle_by_purplejub1993DJC.png",
+	"frame": {"x":2,"y":2,"w":101,"h":131},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":1,"y":1,"w":101,"h":131},
+	"sourceSize": {"w":103,"h":133}
+}],
+"meta": {
+	"app": "http://www.codeandweb.com/texturepacker ",
+	"version": "1.0",
+	"image": "player2.png",
+	"format": "RGBA8888",
+	"size": {"w":128,"h":256},
+	"scale": "1",
+	"smartupdate": "$TexturePacker:SmartUpdate:459a047d0a521bf2fba87b56ce2c098d:1/1$"
+}
+}
