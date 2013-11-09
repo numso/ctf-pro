@@ -178,7 +178,7 @@ function loopBullets() {
       }
     };
 
-    if (!bulletDeath && bullet.id !== 'me' && collidesBullet(bullet, pseudoPlayer)) {
+    if (!bulletDeath && bullet.id !== 'me' && collidesBullet(bullet.spr, pseudoPlayer)) {
       bulletDeath = true;
       playerDeath = true;
     }
@@ -283,22 +283,28 @@ function playerFire() {
   gunCoolDown = 30;
   var p = player.sprite.position;
   var m = map.position;
-  bullets.push(createBullet('me', p.x - m.x, p.y - m.y, toDegrees(player.dude.rotation)-90));
+  var data = {
+    x: p.x - m.x,
+    y: p.y - m.y,
+    d: toDegrees(player.dude.rotation) - 90
+  };
+  socket.emit('shot', data);
+  bullets.push(createBullet(data));
 }
 
-function createBullet(id, x, y, dir) {
+function createBullet(data) {
   var spr = new PIXI.Graphics();
   spr.beginFill(0x000000);
   spr.drawCircle(0, 0, 4);
   spr.endFill();
-  spr.position.x = x;
-  spr.position.y = y;
+  spr.position.x = data.x;
+  spr.position.y = data.y;
   map.addChild(spr);
 
   return {
-    id: id,
-    dx: Math.sin(toRadians(-dir)) * BULLETSPEED,
-    dy: Math.cos(toRadians(-dir)) * BULLETSPEED,
+    id: data.id || 'me',
+    dx: Math.sin(toRadians(-data.d)) * BULLETSPEED,
+    dy: Math.cos(toRadians(-data.d)) * BULLETSPEED,
     spr: spr
   };
 }
@@ -409,7 +415,7 @@ function startIO() {
     gameInProgress = data.go;
     if (!gameInProgress) {
       $('#countdown').text('WAITING FOR PLAYERS');
-      intro.play();
+      // intro.play();
     }
     var yourTeam = data.team;
     setStartCoords(yourTeam, true);
@@ -433,7 +439,7 @@ function startIO() {
   });
 
   socket.on('pos', function (data) {
-    gameMusic.play();
+    // gameMusic.play();
     players[data.id] = players[data.id] || data;
     getCoords(data.id, data.x, data.y);
   });
@@ -449,7 +455,7 @@ function startIO() {
     }, 1000);
     gameInProgress = true;
     intro.stop();
-    gameMusic.play();
+    // gameMusic.play();
   });
 
   socket.on('stop', function () {
@@ -458,6 +464,10 @@ function startIO() {
     $('#countdown').text('WAITING FOR PLAYERS');
     if (t) clearInterval(t);
     $('#timer').text('');
+  });
+
+  socket.on('shot', function (data) {
+    bullets.push(createBullet(data));
   });
 
   socket.on('togo', function (data) {
