@@ -5,6 +5,7 @@ window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequ
 
 var names = ['Donut', 'Penguin', 'Stumpy', 'Whicker', 'Shadow', 'Howard', 'Wilshire', 'Darling', 'Disco', 'Jack', 'The Bear', 'Sneak', 'The Big L', 'Whisp', 'Wheezy', 'Crazy', 'Goat', 'Pirate', 'Saucy', 'Hambone', 'Butcher', 'Walla Walla', 'Snake', 'Caboose', 'Sleepy', 'Killer', 'Stompy', 'Mopey', 'Dopey', 'Weasel', 'Ghost', 'Dasher', 'Grumpy', 'Hollywood', 'Tooth', 'Noodle', 'King', 'Cupid', 'Prancer'];
 var SPEED = 10;
+var BULLETSPEED = 30;
 var newNicks = {};
 
 var assets = ['resources/player.json', 'img/bottom.png', 'img/middle.png'];
@@ -20,11 +21,13 @@ var socket;
 var gameInProgress = false;
 var yourTeam;
 
+var bullets = [];
+var gunCoolDown = 0;
+
 var renderer;
 var stage;
 var map;
 var player;
-var gun;
 var inputs = [];
 var obstacles = [];
 
@@ -143,8 +146,65 @@ function animate() {
   requestAnimationFrame(animate);
   if (gameInProgress) {
     playerMovement(inputs);
+    if (gunCoolDown > 0)
+      gunCoolDown -= 1;
+    loopBullets();
   }
   networkUpdate();
+}
+
+function loopBullets() {
+  var playerDeath = false;
+  for (var i = 0; i < bullets.length; ++i) {
+    var bullet = bullets[i];
+
+    bullet.spr.position.x += bullet.dx;
+    bullet.spr.position.y += bullet.dy;
+
+    var bulletDeath = false;
+
+    for (var j = 0; j < obstacles.length && !bulletDeath; ++j) {
+      if (collidesBullet(bullet.spr, obstacles[j])) {
+        bulletDeath = true;
+      }
+    }
+
+    var pseudoPlayer = {
+      position: {
+        x: 0,
+        y: 0,
+        w: 20,
+        h: 20
+      }
+    };
+
+    if (!bulletDeath && bullet.id !== 'me' && collidesBullet(bullet, pseudoPlayer)) {
+      bulletDeath = true;
+      playerDeath = true;
+    }
+
+    if (bulletDeath) {
+      map.removeChild(bullet.spr);
+      bullets.splice(i--, 1);
+    }
+  }
+
+  if (playerDeath) {
+    console.log('KILL THE PLAYER');
+  }
+}
+
+function collidesBullet(bullet, object) {
+  var bp = bullet.position;
+  var op = object.position;
+
+  if (bp.x < op.x + (op.w || 40) && op.x < bp.x + 4) {
+    if (bp.y < op.y + (op.h || 40) && op.y < bp.y + 4) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 function networkUpdate() {
@@ -214,6 +274,33 @@ function playerMovement(inputs) {
   } else {
     player.dude.stop();
   }
+
+  if (inputs[32]) playerFire();
+}
+
+function playerFire() {
+  if (gunCoolDown) return;
+  gunCoolDown = 30;
+  var p = player.sprite.position;
+  var m = map.position;
+  bullets.push(createBullet('me', p.x - m.x, p.y - m.y, toDegrees(player.dude.rotation)-90));
+}
+
+function createBullet(id, x, y, dir) {
+  var spr = new PIXI.Graphics();
+  spr.beginFill(0x000000);
+  spr.drawCircle(0, 0, 4);
+  spr.endFill();
+  spr.position.x = x;
+  spr.position.y = y;
+  map.addChild(spr);
+
+  return {
+    id: id,
+    dx: Math.sin(toRadians(-dir)) * BULLETSPEED,
+    dy: Math.cos(toRadians(-dir)) * BULLETSPEED,
+    spr: spr
+  };
 }
 
 function move(x, y) {
@@ -279,6 +366,7 @@ window.addEventListener('keydown', function (e) {
 
 window.addEventListener('keyup', function (e) {
   inputs[e.keyCode] = false;
+  if (e.keyCode === 32) gunCoolDown = 0;
 });
 
 function setStartCoords(team, isNew) {
@@ -400,7 +488,6 @@ function getCoords(id, x, y) {
   players[id].y = y;
 }
 
-
 var t;
 function setTimer(num) {
   var mins = num;
@@ -412,6 +499,9 @@ function setTimer(num) {
       secs += 60;
       mins -= 1;
     }
-    $('#timer').text(mins + ':' + secs);
+
+    var minShow = (mins === 0) ? '' : (mins + ':');
+    var secShow = ((secs < 10) ? '0' : '') + secs;
+    $('#timer').text(minShow + secShow);
   }, 1000);
 }
