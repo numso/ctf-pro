@@ -317,11 +317,11 @@ function startIO() {
   socket = io.connect();
 
   socket.on('conn', function (data) {
-    playMusic(false);
     console.log(data);
     gameInProgress = data.go;
     if (!gameInProgress) {
       $('#countdown').text('WAITING FOR PLAYERS');
+      playMusic(false);
     }
     var yourTeam = data.team;
     setStartCoords(yourTeam, true);
@@ -351,10 +351,6 @@ function startIO() {
 
   socket.on('countdown', function (data) {
     $('#countdown').text('Game in ' + data.sec);
-    var intro = new Howl({
-      urls: ['/snd/intro.mp3'],
-      loop: true
-    });
   });
 
   socket.on('go', function () {
@@ -367,6 +363,7 @@ function startIO() {
   });
 
   socket.on('stop', function () {
+    playMusic(false);
     gameInProgress = false;
     setStartCoords(yourTeam);
     $('#countdown').text('WAITING FOR PLAYERS');
