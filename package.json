@@ -15,7 +15,9 @@
     "express": "3.4.0",
     "stylus": "*",
     "config": "~0.4.33",
-    "socket.io": "~0.9.16"
+    "socket.io": "~0.9.16",
+    "node-uuid": "~1.4.1",
+    "underscore": "~1.5.2"
   },
   "engines": {
     "node": "0.10.x"
