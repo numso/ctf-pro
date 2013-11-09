@@ -1,3 +1,10 @@
+/*******************************************************************************
+ * WRITTEN BY: RICHIE PREECE
+ * WRITTEN FOR: NODE KNOCKOUT 2013
+ * TEAM: ADALDEN
+ * TEAM MEMBERS: RICHIE PREECE, DALLIN OSMUN, JUSTIN PERMANN
+ ******************************************************************************/
+
 /* jshint node:true */
 'use strict';
 
@@ -11,13 +18,33 @@ var users = {};
 var teams = {
   a: {
     points: 0,
+    kills: 0,
+    shots: 0,
+    stole: 0,
+    deaths: 0,
     users: {}
   },
   b: {
     points: 0,
+    kills: 0,
+    shots: 0,
+    stole: 0,
+    deaths: 0,
     users: {}
   }
 };
+var game = {};
+
+function initGame(){
+  game = {
+    started: false,
+    points: 0,
+    kills: 0,
+    shots: 0,
+    stole: 0,
+    deaths: 0
+  }
+}
 
 function getID(){
   var id = -1;
@@ -53,11 +80,12 @@ function connect(socket) {
   users[id] = user;
 
   socket.emit('conn', {
-    team: user.team
+    team: user.team,
+    go: game.started
   });
   socket.broadcast.emit('new', {
     id: user.id,
-    team: user.team
+    team: team
   });
 
   socket.on('disconnect', function(){
@@ -97,6 +125,7 @@ function connect(socket) {
   socket.on('point', function(){
     ++user.points;
     ++teams[team].points;
+    ++game.points;
 
     var result = {
       id: user.id,
@@ -115,18 +144,29 @@ function connect(socket) {
     data.id = user.id;
 
     ++user.shots;
+    ++teams[team].shots;
+    ++game.shots;
 
     socket.broadcast.emit('shot', data);
   });
 
   socket.on('kill', function(data){
     if(!data.id) return;
+
     ++users[data.id].kills;
+    ++teams[users[data.id].team].kills;
+    ++game.kills;
+    
     ++user.deaths;
+    ++teams[team].deaths;
+    ++game.deaths;
   });
 
   socket.on('got', function(){
     ++user.stole;
+    ++teams[team].stole;
+    ++game.stole;
+
     socket.broadcast.emit('got', {
       id: user.id
     });
@@ -137,4 +177,18 @@ function connect(socket) {
       id: user.id
     });
   })
+
+  socket.on('chat', function(data){
+    if(!data.msg) return;
+
+    var msg = {
+      id: user.id,
+      msg: data.msg
+    };
+
+    socket.emit('msg', msg);
+    socket.broadcast.emit('msg', msg);
+  });
 }
+
+initGame();
