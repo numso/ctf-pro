@@ -45,7 +45,9 @@ function connect(socket) {
     team: team,
     points: 0,
     kills: 0,
-    shots: 0
+    shots: 0,
+    stole: 0,
+    deaths: 0
   };
   teams[team].users[id] = user;
   users[id] = user;
@@ -56,6 +58,12 @@ function connect(socket) {
   socket.broadcast.emit('new', {
     id: user.id,
     team: user.team
+  });
+
+  socket.on('disconnect', function(){
+    socket.broadcast.emit('dis', {
+      id: user.id
+    });
   });
 
   socket.on('start', function(data){
@@ -114,5 +122,19 @@ function connect(socket) {
   socket.on('kill', function(data){
     if(!data.id) return;
     ++users[data.id].kills;
+    ++user.deaths;
   });
+
+  socket.on('got', function(){
+    ++user.stole;
+    socket.broadcast.emit('got', {
+      id: user.id
+    });
+  });
+
+  socket.on('drop', function(){
+    socket.broadcast.emit('drop', {
+      id: user.id
+    });
+  })
 }
