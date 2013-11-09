@@ -91,7 +91,7 @@ function stopGame(){
 
 function resetGame(){
   _.each(game, function(element, index, list){
-    if(typeof element === 'number'){
+    if(typeof element === 'number' && index != 'active'){
       list[index] = 0;
     }
   })
@@ -111,6 +111,8 @@ function resetGame(){
       }
     });
   });
+
+  game.connected = game.active;
 }
 
 function getID(){
@@ -148,7 +150,7 @@ function connect(socket) {
   users[id] = user;
 
   ++game.connected;
-
+  
   if(++game.active >= 2 && !game.countdown && !game.started){
     game.countdown = true;
     countdown(10);
