@@ -18,6 +18,7 @@ var stage;
 var map;
 var player;
 var inputs = [];
+var obstacles = [];
 
 function loadGame() {
   renderer = new PIXI.autoDetectRenderer(1400, 600);
@@ -44,6 +45,8 @@ function createPlayer() {
   player.pivot.y = 12;
   player.position.x += 700;
   player.position.y += 300;
+  player._width = 40;
+  player._height = 40;
   player.animationSpeed = 0.2;
   player.scale.x = 2;
   player.scale.y = 2;
@@ -71,6 +74,9 @@ function createMap() {
       tempSprite = PIXI.Sprite.fromFrame('mid-' + id);
       tempSprite.position.x = i * 40;
       tempSprite.position.y = j * 40;
+      tempSprite._width = 40;
+      tempSprite._height = 40;
+      obstacles.push(tempSprite);
       map.addChild(tempSprite);
     }
   }
@@ -107,10 +113,10 @@ function animate() {
 
 function playerMovement(inputs) {
   var moved = false;
-  if (inputs[37] && move(1, 0, Math.PI)) moved = true;
-  if (inputs[39] && move(-1, 0, 0)) moved = true;
-  if (inputs[38] && move(0, 1, Math.PI * 3 / 2)) moved = true;
-  if (inputs[40] && move(0, -1, Math.PI / 2)) moved = true;
+  if (inputs[37] && move(1, 0))  moved = true;
+  if (inputs[39] && move(-1, 0)) moved = true;
+  if (inputs[38] && move(0, 1))  moved = true;
+  if (inputs[40] && move(0, -1)) moved = true;
 
   var fn = moved ? 'play' : 'stop';
   player[fn]();
@@ -118,10 +124,32 @@ function playerMovement(inputs) {
 }
 
 function move(x, y) {
+  if (detectCollision(map.position.x + x, map.position.y + y)){
+   return false; 
+  }
   map.position.x += x * SPEED;
   map.position.y += y * SPEED;
   return true;
 }
+
+function detectCollision(x, y) {
+  // console.log((x- player.position.x) * -1 - player._width, (y-player.position.y) * -1 - player._height);
+  _.each(obstacles, function(obs) {
+    if (collides(obs, player, x, y)) return true;
+  });
+  return false;
+}
+  
+function collides(obj, player, offsetX, offsetY) {
+  if(((offsetX - player.position.x) * -1) - player._width > obj.x && offsetX - player.position.x < obj.position.x + obj._width) {
+    console.log('inside the first group');
+    if(((offsetY - player.position.y) * -1) - player._height  > obj.position.y && offsetY - player.position.y < obj.position.y + obj._height) {
+      console.log('inside the second group');
+      return true;
+    }
+  }
+  return false;
+};
 
 function rotate(desiredRot) {
   player.rotation = desiredRot;
