@@ -4,7 +4,7 @@
 window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || function (cb) { window.setTimeout(cb, 1000 / 60); };
 
 var inputs = [];
-var test;
+var player;
 
 // You can use either PIXI.WebGLRenderer or PIXI.CanvasRenderer
 var renderer = new PIXI.WebGLRenderer(1400, 600);
@@ -18,13 +18,13 @@ var stage = new PIXI.Stage();
 
 var spriteSheet = new PIXI.SpriteSheetLoader('/resources/player.json');
 spriteSheet.onLoaded = function () {
-  var textures = [];
+  var playerList = [];
   for (var i = 0; i < 3; ++i) {
-    textures.push(new PIXI.Texture.fromFrame(i));
+    playerList.push(new PIXI.Texture.fromFrame(i));
   }
-  test = new PIXI.MovieClip(textures);
-  test.animationSpeed = 0.2;
-  stage.addChild(test);
+  player = new PIXI.MovieClip(playerList);
+  player.animationSpeed = 0.2;
+  stage.addChild(player);
 };
 
 spriteSheet.load();
@@ -36,10 +36,10 @@ function animate() {
   requestAnimationFrame(animate);
 
   if (inputs[39]) {
-    test.position.x += 2;
-    test.play();
+    player.position.x += 2;
+    player.play();
   } else {
-    test.stop();
+    player.stop();
   }
 }
 

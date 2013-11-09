@@ -19,7 +19,7 @@
 {
 	"filename": "guy3.png",
 	"frame": {"x":28,"y":2,"w":22,"h":25},
-	"rotated": true,
+	"rotated": false,
 	"trimmed": false,
 	"spriteSourceSize": {"x":0,"y":0,"w":22,"h":25},
 	"sourceSize": {"w":22,"h":25}
@@ -31,6 +31,6 @@
 	"format": "RGBA8888",
 	"size": {"w":64,"h":64},
 	"scale": "1",
-	"smartupdate": "$TexturePacker:SmartUpdate:0285edced5bd8c514cd9985f7af8725c:1/1$"
+	"smartupdate": "$TexturePacker:SmartUpdate:c81990dc8f69b3601a9a8be8b5d63388:1/1$"
 }
 }
