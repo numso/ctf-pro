@@ -11,6 +11,8 @@
 var _ = require('underscore');
 var mainIO;
 
+var currTimeout;
+
 module.exports = function (io) {
   mainIO = io;
   io.sockets.on('connection', connect);
@@ -61,25 +63,30 @@ function countdown(togo){ //togo is seconds
     mainIO.sockets.emit('countdown', {
       sec: togo
     });
-    setTimeout(countdown, 1000, togo - 1);
+    currTimeout = setTimeout(countdown, 1000, togo - 1);
   }
 }
 
 function gameleft(togo){ //togo is minutes
   if(togo == 0){
-    game.started = false;
-    mainIO.sockets.emit('stop', game);
+    stopGame();
 
-    resetGame();
     game.countdown = true;
-    game.started = false;
     countdown(15);
   } else {
     mainIO.sockets.emit('togo', {
       min: togo
     });
-    setTimeout(gameleft, 1000 * 60, togo - 1);
+    currTimeout = setTimeout(gameleft, 1000 * 60, togo - 1);
   }
+}
+
+function stopGame(){
+  clearTimeout(currTimeout);
+  game.started = false;
+  game.countdown = false;
+  mainIO.sockets.emit('stop', game);
+  resetGame();
 }
 
 function resetGame(){
@@ -117,7 +124,7 @@ function getID(){
 }
 
 function assignTeam(){
-  if(_.keys(teams.a).length < _.keys(teams.b).length){
+  if(_.keys(teams.a.users).length < _.keys(teams.b.users).length){
     return 'a';
   } else {
     return 'b';
@@ -161,7 +168,9 @@ function connect(socket) {
       id: user.id
     });
 
-    --game.active;
+    if(--game.active < 2){
+      stopGame();
+    }
 
     delete teams[team].users[user.id];
     delete users[user.id];
@@ -188,7 +197,7 @@ function connect(socket) {
     user.x = data.x;
     user.y = data.y;
 
-    socket.broadcast.emit('pos', {
+    socket.broadcast.volatile.emit('pos', {
       id: user.id,
       x: user.x,
       y: user.y
@@ -205,6 +214,10 @@ function connect(socket) {
       a: teams.a.points,
       b: teams.b.points
     };
+
+    if(teams[team].points === 3){
+      stopGame();
+    }
 
     socket.emit('point', result);
     socket.broadcast.emit('point', result);
