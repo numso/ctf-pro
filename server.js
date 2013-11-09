@@ -62,6 +62,25 @@ server.listen(app.get('port'), function (err) {
 });
 
 
+io.configure('production', function () {
+  io.enable('browser client minification');  // send minified client
+  io.enable('browser client etag');          // apply etag caching logic based on version number
+  io.enable('browser client gzip');          // gzip the file
+  io.set('log level', 1);                    // reduce logging
+
+  // enable all transports (optional if you want flashsocket support, please note that some hosting
+  // providers do not allow you to create servers that listen on a port different than 80 or their
+  // default port)
+  io.set('transports', [
+    'websocket',
+    'flashsocket',
+    'htmlfile',
+    'xhr-polling',
+    'jsonp-polling'
+  ]);
+});
+
+
 
   // // http://blog.nodeknockout.com/post/35364532732/protip-add-the-vote-ko-badge-to-your-app
   // var voteko = '<iframe src="http://nodeknockout.com/iframe/adalden" frameborder=0 scrolling=no allowtransparency=true width=115 height=25></iframe>';
