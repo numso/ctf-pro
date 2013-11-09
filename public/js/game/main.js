@@ -415,7 +415,9 @@ function startIO() {
     gameInProgress = data.go;
     if (!gameInProgress) {
       $('#countdown').text('WAITING FOR PLAYERS');
-      // intro.play();
+      intro.play().fade(0, 1);
+    } else {
+      gameMusic.play();
     }
     var yourTeam = data.team;
     setStartCoords(yourTeam, true);
@@ -439,7 +441,6 @@ function startIO() {
   });
 
   socket.on('pos', function (data) {
-    // gameMusic.play();
     players[data.id] = players[data.id] || data;
     getCoords(data.id, data.x, data.y);
   });
@@ -455,10 +456,12 @@ function startIO() {
     }, 1000);
     gameInProgress = true;
     intro.stop();
-    // gameMusic.play();
+    gameMusic.play();
   });
 
   socket.on('stop', function () {
+    gameMusic.stop();
+    intro.play();
     gameInProgress = false;
     setStartCoords(yourTeam);
     $('#countdown').text('WAITING FOR PLAYERS');
