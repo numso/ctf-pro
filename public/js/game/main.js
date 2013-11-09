@@ -345,6 +345,7 @@ function startIO() {
   });
 
   socket.on('pos', function (data) {
+    gameMusic.play();
     players[data.id] = players[data.id] || data;
     getCoords(data.id, data.x, data.y);
   });
