@@ -150,7 +150,7 @@ function connect(socket) {
   users[id] = user;
 
   ++game.connected;
-  
+
   if(++game.active >= 2 && !game.countdown && !game.started){
     game.countdown = true;
     countdown(10);
@@ -158,7 +158,17 @@ function connect(socket) {
 
   socket.emit('conn', {
     team: user.team,
-    go: game.started
+    go: game.started,
+    teams: {
+      a: {
+        points: teams.a.points,
+        users: teams.a.users
+      },
+      b: {
+        points: teams.b.points,
+        users: teams.b.users
+      }
+    }
   });
   socket.broadcast.emit('new', {
     id: user.id,
@@ -285,6 +295,14 @@ function connect(socket) {
       id: user.id,
       msg: data.msg
     };
+
+    if(data.msg.indexOf('/setNic ') === 0){
+      var oldNick = user.nickname || user.id;
+      var newNick = data.msg.replace('/setNic', '');
+      data.msg = oldNick + ' is now known as ' + newNick;
+      data.nic = newNick;
+      user.nickname = newNick;
+    }
 
     socket.emit('msg', msg);
     socket.broadcast.emit('msg', msg);
