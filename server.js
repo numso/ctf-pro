@@ -12,6 +12,10 @@ var    http = require('http'),
 
 var app = express();
 
+console.log(process.env.port);
+console.log(config.port);
+console.log(app.get('env'));
+
 app.set('port', process.env.PORT || config.port || 3000);
 
 var sessOptions = config.sessOptions;
