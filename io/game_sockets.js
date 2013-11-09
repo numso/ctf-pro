@@ -283,9 +283,8 @@ function connect(socket) {
 
     if(data.msg.indexOf('/setNic ') === 0){
       var oldNick = user.nickname || user.id;
-      var newNick = data.msg.replace('/setNic', '');
+      var newNick = data.msg.replace('/setNic ', '');
       data.msg = oldNick + ' is now known as ' + newNick;
-      data.nic = newNick;
       user.nickname = newNick;
       return socket.broadcast.emit('msg', msg);
     }
