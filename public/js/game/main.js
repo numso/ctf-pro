@@ -31,6 +31,16 @@ var player;
 var inputs = [];
 var obstacles = [];
 
+var intro = new Howl({
+    urls: ['/snd/intro.mp3'],
+    loop: true
+  });
+
+var gameMusic = new Howl({
+  urls: ['/snd/gameMusic.mp3'],
+  loop: true
+});
+
 function loadGame() {
   renderer = new PIXI.autoDetectRenderer(1400, 600);
   $('#view').after(renderer.view);
@@ -399,6 +409,7 @@ function startIO() {
     gameInProgress = data.go;
     if (!gameInProgress) {
       $('#countdown').text('WAITING FOR PLAYERS');
+      intro.play();
     }
     var yourTeam = data.team;
     setStartCoords(yourTeam, true);
@@ -422,6 +433,7 @@ function startIO() {
   });
 
   socket.on('pos', function (data) {
+    gameMusic.play();
     players[data.id] = players[data.id] || data;
     getCoords(data.id, data.x, data.y);
   });
@@ -436,6 +448,8 @@ function startIO() {
       $('#countdown').text('');
     }, 1000);
     gameInProgress = true;
+    intro.stop();
+    gameMusic.play();
   });
 
   socket.on('stop', function () {

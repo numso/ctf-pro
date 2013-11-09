@@ -237,7 +237,7 @@ function connect(socket) {
     socket.broadcast.emit('shot', data);
   });
 
-  socket.on('kill', function(data){
+  socket.on('died', function(data){
     if(!data.id) return;
 
     if(user.team == users[data.id].team){
