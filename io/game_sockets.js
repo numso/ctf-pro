@@ -75,7 +75,7 @@ function gameleft(togo){ //togo is minutes
     game.started = false;
     countdown(15);
   } else {
-    main.IO.sockets.emit('togo', {
+    mainIO.sockets.emit('togo', {
       min: togo
     });
     setTimeout(gameleft, 1000 * 60, togo - 1);
@@ -141,7 +141,7 @@ function connect(socket) {
   users[id] = user;
 
   ++game.connected;
-  
+
   if(++game.active >= 2 && !game.countdown){
     game.countdown = true;
     countdown(10);
