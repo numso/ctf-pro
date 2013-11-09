@@ -45,7 +45,9 @@ function connect(socket) {
   };
   teams[team].users[id] = user;
 
-  socket.emit('conn', user);
+  socket.emit('conn', {
+    team: user.team
+  });
   socket.broadcast.emit('new', user);
 
   socket.on('start', function(data){
