@@ -146,8 +146,6 @@ function connect(socket) {
     deaths: 0,
     ffire: 0
   };
-  teams[team].users[id] = user;
-  users[id] = user;
 
   ++game.connected;
 
@@ -170,6 +168,11 @@ function connect(socket) {
       }
     }
   });
+
+
+  teams[team].users[id] = user;
+  users[id] = user;
+  
   socket.broadcast.emit('new', {
     id: user.id,
     team: team
@@ -256,20 +259,16 @@ function connect(socket) {
       ++users[data.id].ffire;
       ++teams[users[data.id].team].ffire;
       ++game.ffire;
-      
-      ++user.deaths;
-      ++teams[team].deaths;
-      ++game.deaths;
     } else {
       //Legit kill
       ++users[data.id].kills;
       ++teams[users[data.id].team].kills;
       ++game.kills;
-      
-      ++user.deaths;
-      ++teams[team].deaths;
-      ++game.deaths;
     }
+      
+    ++user.deaths;
+    ++teams[team].deaths;
+    ++game.deaths;
   });
 
   socket.on('got', function(){
