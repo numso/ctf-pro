@@ -191,20 +191,6 @@ function connect(socket) {
     delete users[user.id];
   });
 
-  socket.on('start', function(data){
-    if(!data.x) return;
-    if(!data.y) return;
-
-    user.x = data.x;
-    user.y = data.y;
-
-    socket.broadcast.emit('pos', {
-      id: user.id,
-      x: user.x,
-      y: user.y
-    });
-  });
-
   socket.on('move', function(data){
     if(!data.x) return;
     if(!data.y) return;
@@ -301,6 +287,7 @@ function connect(socket) {
       data.msg = oldNick + ' is now known as ' + newNick;
       data.nic = newNick;
       user.nickname = newNick;
+      return socket.broadcast.emit('msg', msg);
     }
 
     socket.emit('msg', msg);
