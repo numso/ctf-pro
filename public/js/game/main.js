@@ -41,12 +41,12 @@ function createPlayer() {
     playerList.push(new PIXI.Texture.fromFrame(i));
   }
   var player = new PIXI.MovieClip(playerList);
-  player.pivot.x = 12;
-  player.pivot.y = 12;
+  player.pivot.x = 10;
+  player.pivot.y = 10;
   player.position.x += 700;
   player.position.y += 300;
-  player._width = 40;
-  player._height = 40;
+  player._width = 20;
+  player._height = 20;
   player.animationSpeed = 0.2;
   player.scale.x = 2;
   player.scale.y = 2;
