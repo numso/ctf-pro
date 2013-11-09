@@ -9,8 +9,10 @@
 'use strict';
 
 var _ = require('underscore');
+var mainIO;
 
 module.exports = function (io) {
+  mainIO = io;
   io.sockets.on('connection', connect);
 };
 
@@ -22,6 +24,7 @@ var teams = {
     shots: 0,
     stole: 0,
     deaths: 0,
+    ffire: 0,
     users: {}
   },
   b: {
@@ -30,19 +33,36 @@ var teams = {
     shots: 0,
     stole: 0,
     deaths: 0,
+    ffire: 0,
     users: {}
   }
 };
-var game = {};
+var game = initGame();
 
 function initGame(){
-  game = {
+  return {
     started: false,
+    countdown: false,
+    connected: 0,
     points: 0,
     kills: 0,
     shots: 0,
     stole: 0,
-    deaths: 0
+    deaths: 0,
+    ffire: 0
+  }
+}
+
+function countdown(togo){
+  if(togo == 0){
+    game.started = true;
+    game.ccountdown = false;
+    mainIO.sockets.emit('go');
+  } else {
+    mainIO.sockets.emit('countdown', {
+      sec: togo
+    });
+    setTimeout(countdown, 1000, togo - 1);
   }
 }
 
@@ -74,10 +94,16 @@ function connect(socket) {
     kills: 0,
     shots: 0,
     stole: 0,
-    deaths: 0
+    deaths: 0,
+    ffire: 0
   };
   teams[team].users[id] = user;
   users[id] = user;
+
+  if(++game.connected >= 2 && !game.countdown){
+    game.countdown = true;
+    countdown(10);
+  }
 
   socket.emit('conn', {
     team: user.team,
@@ -153,13 +179,25 @@ function connect(socket) {
   socket.on('kill', function(data){
     if(!data.id) return;
 
-    ++users[data.id].kills;
-    ++teams[users[data.id].team].kills;
-    ++game.kills;
-    
-    ++user.deaths;
-    ++teams[team].deaths;
-    ++game.deaths;
+    if(user.team == users[data.id].team){
+      //Friendly fire
+      ++users[data.id].ffire;
+      ++teams[users[data.id].team].ffire;
+      ++game.ffire;
+      
+      ++user.deaths;
+      ++teams[team].deaths;
+      ++game.deaths;
+    } else {
+      //Legit kill
+      ++users[data.id].kills;
+      ++teams[users[data.id].team].kills;
+      ++game.kills;
+      
+      ++user.deaths;
+      ++teams[team].deaths;
+      ++game.deaths;
+    }
   });
 
   socket.on('got', function(){
@@ -190,5 +228,3 @@ function connect(socket) {
     socket.broadcast.emit('msg', msg);
   });
 }
-
-initGame();
