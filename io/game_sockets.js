@@ -285,6 +285,7 @@ function connect(socket) {
       var oldNick = user.nickname || user.id;
       var newNick = msg.msg.replace('/setNick ', '');
       msg.msg = oldNick + ' is now known as ' + newNick;
+      msg.nick = newNick;
       user.nickname = newNick;
       return socket.broadcast.emit('msg', msg);
     }
