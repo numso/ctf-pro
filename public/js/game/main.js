@@ -322,6 +322,8 @@ function startIO() {
     if (!gameInProgress) {
       $('#countdown').text('WAITING FOR PLAYERS');
       playMusic(false);
+    } else {
+      playMusic(true);
     }
     var yourTeam = data.team;
     setStartCoords(yourTeam, true);
@@ -354,12 +356,12 @@ function startIO() {
   });
 
   socket.on('go', function () {
-    playMusic(true);
     $('#countdown').text('GO!!');
     setTimeout(function () {
       $('#countdown').text('');
     }, 1000);
     gameInProgress = true;
+    playMusic(true);
   });
 
   socket.on('stop', function () {
