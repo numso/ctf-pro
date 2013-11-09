@@ -98,7 +98,7 @@ function resetGame(){
 
   _.each(users, function(user){
     _.each(user, function(element, index, list){
-      if(typeof element === 'number'){
+      if(typeof element === 'number' && index != 'id'){
         list[index] = 0;
       }
     });
@@ -172,7 +172,7 @@ function connect(socket) {
 
   teams[team].users[id] = user;
   users[id] = user;
-  
+
   socket.broadcast.emit('new', {
     id: user.id,
     team: team
