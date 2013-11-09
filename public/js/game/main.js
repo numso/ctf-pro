@@ -10,22 +10,20 @@ $('#view').after(renderer.view);
 
 var stage = new PIXI.Stage();
 
-var bunnyTexture = PIXI.Texture.fromImage('img/top-down_kit.png');
-var bunny = new PIXI.Sprite(bunnyTexture);
+// var bunnyTexture = PIXI.Texture.fromImage('/img/player.png');
+// var bunny = new PIXI.Sprite(bunnyTexture);
 
-bunny.position.x = 400;
-bunny.position.y = 300;
+var spriteSheet = new PIXI.SpriteSheetLoader('/resources/player.json');
+spriteSheet.addEventListener('loaded', function(player){
+  var player = new PIXI.Sprite.fromFrame(player.content.json.frames[0].toString());
+  stage.addChild(player);
+});
 
-bunny.scale.x = 2;
-bunny.scale.y = 2;
-
-stage.addChild(bunny);
+spriteSheet.load();
 
 requestAnimationFrame(animate);
 
 function animate() {
-  bunny.rotation += 0.01;
-
   renderer.render(stage);
 
   requestAnimationFrame(animate);
