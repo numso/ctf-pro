@@ -16,7 +16,10 @@ var port = app.get('env') === 'production' ? 80 : 3000;
 
 app.set('port', port);
 
-var sessOptions = config.sessOptions;
+var sessOptions = {
+  key: 'adalden-NKO',
+  secret: 'tcndgy23cr875yfia.rpid345079pi80u9=c,h54df09.48rpich,3/9'
+};
 
 // all environments
 app.use(express.favicon());
