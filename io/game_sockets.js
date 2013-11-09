@@ -41,6 +41,7 @@ var game = {
   started: false,
   countdown: false,
   connected: 0,
+  active: 0,
   points: 0,
   kills: 0,
   shots: 0,
@@ -139,7 +140,9 @@ function connect(socket) {
   teams[team].users[id] = user;
   users[id] = user;
 
-  if(++game.connected >= 2 && !game.countdown){
+  ++game.connected;
+  
+  if(++game.active >= 2 && !game.countdown){
     game.countdown = true;
     countdown(10);
   }
@@ -157,6 +160,9 @@ function connect(socket) {
     socket.broadcast.emit('dis', {
       id: user.id
     });
+
+    --game.active;
+
     delete teams[team].users[user.id];
     delete users[user.id];
   });
