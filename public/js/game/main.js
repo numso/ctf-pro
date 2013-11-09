@@ -1,4 +1,4 @@
-/* global PIXI, $, requestAnimationFrame, TESTMAP, io, console, _ */
+/* global PIXI, $, requestAnimationFrame, TESTMAP, io, console, _, Howl */
 'use strict';
 
 window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || function (cb) { window.setTimeout(cb, 1000 / 60); };
@@ -39,6 +39,20 @@ var intro = new Howl({
 var gameMusic = new Howl({
   urls: ['/snd/gameMusic.mp3'],
   loop: true
+});
+
+var muted = false;
+$('#muteButton').click(function () {
+  muted = !muted;
+  if (muted) {
+    intro.mute();
+    gameMusic.mute();
+    $(this).text('Unmute');
+  } else {
+    gameMusic.unmute();
+    intro.unmute();
+    $(this).text('Mute');
+  }
 });
 
 function loadGame() {
@@ -488,7 +502,6 @@ function startIO() {
 
 function sendCoords(x, y) {
   if (!socket) return;
-  // console.log(x,y);
   socket.emit('move', {
     x: x,
     y: y
