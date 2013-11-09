@@ -321,9 +321,7 @@ function startIO() {
     gameInProgress = data.go;
     if (!gameInProgress) {
       $('#countdown').text('WAITING FOR PLAYERS');
-      playMusic(false);
-    } else {
-      playMusic(true);
+      intro.play();
     }
     var yourTeam = data.team;
     setStartCoords(yourTeam, true);
@@ -361,11 +359,11 @@ function startIO() {
       $('#countdown').text('');
     }, 1000);
     gameInProgress = true;
-    playMusic(true);
+    intro.stop();
+    gameMusic.play();
   });
 
   socket.on('stop', function () {
-    playMusic(false);
     gameInProgress = false;
     setStartCoords(yourTeam);
     $('#countdown').text('WAITING FOR PLAYERS');
@@ -384,16 +382,6 @@ function startIO() {
       newNicks[data.id] = data.nick;
     }
   });
-}
-
-function playMusic(flag) {
-  if (flag) {
-    intro.stop();
-    gameMusic.play()
-  } else {
-    intro.play();
-    gameMusic.stop()
-  }
 }
 
 function sendCoords(x, y) {
