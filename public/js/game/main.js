@@ -1,4 +1,4 @@
-/* global PIXI, $, requestAnimationFrame, TESTMAP, io, console, _ */
+/* global PIXI, $, requestAnimationFrame, TESTMAP, io, console, _, Howl */
 'use strict';
 
 window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || function (cb) { window.setTimeout(cb, 1000 / 60); };
@@ -41,6 +41,20 @@ var intro = new Howl({
 var gameMusic = new Howl({
   urls: ['/snd/gameMusic.mp3'],
   loop: true
+});
+
+var muted = false;
+$('#muteButton').click(function () {
+  muted = !muted;
+  if (muted) {
+    intro.mute();
+    gameMusic.mute();
+    $(this).text('Unmute');
+  } else {
+    gameMusic.unmute();
+    intro.unmute();
+    $(this).text('Mute');
+  }
 });
 
 function loadGame() {
@@ -195,7 +209,7 @@ function loopBullets() {
       }
     };
 
-    if (!bulletDeath && bullet.id !== 'me' && collidesBullet(bullet, pseudoPlayer)) {
+    if (!bulletDeath && bullet.id !== 'me' && collidesBullet(bullet.spr, pseudoPlayer)) {
       bulletDeath = true;
       playerDeath = true;
     }
@@ -300,22 +314,28 @@ function playerFire() {
   gunCoolDown = 30;
   var p = player.sprite.position;
   var m = map.position;
-  bullets.push(createBullet('me', p.x - m.x, p.y - m.y, toDegrees(player.dude.rotation)-90));
+  var data = {
+    x: p.x - m.x,
+    y: p.y - m.y,
+    d: toDegrees(player.dude.rotation) - 90
+  };
+  socket.emit('shot', data);
+  bullets.push(createBullet(data));
 }
 
-function createBullet(id, x, y, dir) {
+function createBullet(data) {
   var spr = new PIXI.Graphics();
   spr.beginFill(0x000000);
   spr.drawCircle(0, 0, 4);
   spr.endFill();
-  spr.position.x = x;
-  spr.position.y = y;
+  spr.position.x = data.x;
+  spr.position.y = data.y;
   map.addChild(spr);
 
   return {
-    id: id,
-    dx: Math.sin(toRadians(-dir)) * BULLETSPEED,
-    dy: Math.cos(toRadians(-dir)) * BULLETSPEED,
+    id: data.id || 'me',
+    dx: Math.sin(toRadians(-data.d)) * BULLETSPEED,
+    dy: Math.cos(toRadians(-data.d)) * BULLETSPEED,
     spr: spr
   };
 }
@@ -471,11 +491,17 @@ function startIO() {
   });
 
   socket.on('stop', function () {
+    gameMusic.stop();
+    intro.play();
     gameInProgress = false;
     setStartCoords(yourTeam);
     $('#countdown').text('WAITING FOR PLAYERS');
     if (t) clearInterval(t);
     $('#timer').text('');
+  });
+
+  socket.on('shot', function (data) {
+    bullets.push(createBullet(data));
   });
 
   socket.on('togo', function (data) {
@@ -493,7 +519,6 @@ function startIO() {
 
 function sendCoords(x, y) {
   if (!socket) return;
-  // console.log(x,y);
   socket.emit('move', {
     x: x,
     y: y
