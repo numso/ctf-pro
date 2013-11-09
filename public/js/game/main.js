@@ -157,20 +157,21 @@ function move(x, y) {
 
 function detectCollision(x, y) {
   // console.log((x- player.position.x) * -1 - player._width, (y-player.position.y) * -1 - player._height);
+  var flag = false;
   _.each(obstacles, function(obs) {
-    if (collides(obs, player, x, y)) return true;
+    if (collides(obs, player, x, y)) {
+      flag = true;
+    }
   });
-  return false;
+  return flag;
 }
   
 function collides(obj, player, offsetX, offsetY) {
-  if(((offsetX - player.position.x) * -1) - player._width > obj.x && offsetX - player.position.x < obj.position.x + obj._width) {
-    console.log('inside the first group');
-    if(((offsetY - player.position.y) * -1) - player._height  > obj.position.y && offsetY - player.position.y < obj.position.y + obj._height) {
-      console.log('inside the second group');
+
+  if(((offsetX - player.position.x) * -1) + player._width > obj.position.x && (offsetX - player.position.x) * -1 < obj.position.x + obj._width)
+    if(((offsetY - player.position.y) * -1) + player._height  > obj.position.y && (offsetY - player.position.y) * -1 < obj.position.y + obj._height)
       return true;
-    }
-  }
+
   return false;
 };
 
