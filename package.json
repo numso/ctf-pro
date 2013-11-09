@@ -16,7 +16,6 @@
     "stylus": "*",
     "config": "~0.4.33",
     "socket.io": "~0.9.16",
-    "node-uuid": "~1.4.1",
     "underscore": "~1.5.2"
   },
   "engines": {
