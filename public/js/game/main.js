@@ -236,20 +236,31 @@ function collides(obj, player, offsetX, offsetY) {
 }
 
 function rotate(player, desiredRot) {
-  if (!desiredRot || desiredRot === player.rotation) return;
+  if (!desiredRot) return;
 
-  var playRot = toDegrees(player.rotation);
-  var desiRot = toDegrees(desiredRot);
+  var playRot = toDegrees(player.rotation) || 360;
+  var desiRot = toDegrees(desiredRot) || 360;
+  if (desiRot === playRot) return;
+
+  if (Math.abs(playRot - desiRot) % 360 < 10) {
+    player.rotation = toRadians(desiRot);
+    return;
+  }
 
   var diff = playRot - desiRot;
   var change = diff < 0 ? 1 : -1;
   if (Math.abs(diff) > 180) change = 0 - change;
-  player.rotation += change * Math.PI / 40;
+  player.rotation += change * Math.PI / 20;
 }
 
-function toDegrees(rad) {
-  var val = (rad * (180 / Math.PI)) % 360;
+function toDegrees(angle) {
+  var val = (angle * (180 / Math.PI)) % 360;
   return (val + 360) % 360;
+}
+
+function toRadians(angle) {
+  var val = (angle * (Math.PI / 180));
+  return val;
 }
 
 window.addEventListener('keydown', function (e) {
