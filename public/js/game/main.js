@@ -15,8 +15,9 @@ loader.load();
 
 
 var players = {};
-
 var socket;
+var gameInProgress = false;
+
 var renderer;
 var stage;
 var map;
@@ -116,8 +117,10 @@ function loadMapTextures() {
 function animate() {
   renderer.render(stage);
   requestAnimationFrame(animate);
-  playerMovement(inputs);
-  networkUpdate();
+  if (gameInProgress) {
+    playerMovement(inputs);
+    networkUpdate();
+  }
 }
 
 function networkUpdate() {
@@ -261,7 +264,7 @@ function startIO() {
 
   socket.on('conn', function (data) {
     // console.log(data);
-    // data.go -- BOOLEAN
+    gameInProgress = data.go;
     setStartCoords(data.team, true);
     // data.teams.a and .b
   });
@@ -280,12 +283,23 @@ function startIO() {
   });
 
   socket.on('countdown', function (data) {
-    console.log('count');
-    console.log(data);
+    $('#countdown').text('Game in ' + data.sec);
   });
 
-  socket.on('go', function (data) {
-    console.log('go');
+  socket.on('go', function () {
+    $('#countdown').text('GO!!');
+    setTimeout(function () {
+      $('#countdown').text('');
+    }, 1000);
+    gameInProgress = true;
+  });
+
+  socket.on('stop', function () {
+    gameInProgress = false;
+  });
+
+  socket.on('togo', function (data) {
+    console.log('togo');
     console.log(data);
   });
 
