@@ -23,20 +23,45 @@ spriteSheet.onLoaded = function () {
     playerList.push(new PIXI.Texture.fromFrame(i));
   }
   player = new PIXI.MovieClip(playerList);
+  player.pivot.x = 12;
+  player.pivot.y = 12;
+  player.position.x += 12;
+  player.position.y += 12;
+
   player.animationSpeed = 0.2;
   stage.addChild(player);
 };
 
 spriteSheet.load();
-
 requestAnimationFrame(animate);
 
 function animate() {
   renderer.render(stage);
   requestAnimationFrame(animate);
+  playerMovement(inputs);
+}
 
+function playerMovement(inputs) {
   if (inputs[39]) {
     player.position.x += 2;
+    player.rotation = 0;
+    player.play();
+  } else if(inputs[37]) {
+    player.position.x -= 2;
+    player.rotation = Math.PI;
+    player.play();
+  } else if(inputs[38]) {
+    player.position.y -= 2;
+    if (player.rotation > -1.5) {
+      player.rotation -= .08;
+    }
+    player.play();
+  } else if (inputs[40]) {
+    player.position.y += 2;
+
+    if (player.rotation < 1.7) {
+      player.rotation += .08;
+    }
     player.play();
   } else {
     player.stop();
