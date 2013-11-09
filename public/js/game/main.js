@@ -122,7 +122,7 @@ function networkUpdate() {
     var player = players[key];
 
     if (player.deleted) {
-      stage.removeChild(player.sprite);
+      map.removeChild(player.sprite);
       delete players[key];
       continue;
     }
