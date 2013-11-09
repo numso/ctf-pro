@@ -142,7 +142,7 @@ function connect(socket) {
 
   ++game.connected;
 
-  if(++game.active >= 2 && !game.countdown){
+  if(++game.active >= 2 && !game.countdown && !game.started){
     game.countdown = true;
     countdown(10);
   }
