@@ -15,8 +15,14 @@ var stage = new PIXI.Stage;
 
 var spriteSheet = new PIXI.SpriteSheetLoader('/resources/player.json');
 spriteSheet.addEventListener('loaded', function(player){
-  var player = new PIXI.Sprite.fromFrame(player.content.json.frames[0].toString());
+  var playerList = [];
+  for (var n = 0; n < 3; ++n) {
+    playerList.push(PIXI.Texture.fromFrame(n));
+  }
+  var player = new PIXI.MovieClip(playerList);
   stage.addChild(player);
+  player.animationSpeed = .1;
+  player.play();
 });
 
 spriteSheet.load();
