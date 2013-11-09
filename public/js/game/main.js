@@ -28,6 +28,16 @@ var gun;
 var inputs = [];
 var obstacles = [];
 
+var intro = new Howl({
+    urls: ['/snd/intro.mp3'],
+    loop: true
+  });
+
+var gameMusic = new Howl({
+  urls: ['/snd/gameMusic.mp3'],
+  loop: true
+});
+
 function loadGame() {
   renderer = new PIXI.autoDetectRenderer(1400, 600);
   $('#view').after(renderer.view);
@@ -307,6 +317,7 @@ function startIO() {
   socket = io.connect();
 
   socket.on('conn', function (data) {
+    intro.play();
     console.log(data);
     gameInProgress = data.go;
     if (!gameInProgress) {
@@ -340,9 +351,15 @@ function startIO() {
 
   socket.on('countdown', function (data) {
     $('#countdown').text('Game in ' + data.sec);
+    var intro = new Howl({
+      urls: ['/snd/intro.mp3'],
+      loop: true
+    });
   });
 
   socket.on('go', function () {
+    intro.stop();
+    gameMusic.play();
     $('#countdown').text('GO!!');
     setTimeout(function () {
       $('#countdown').text('');
