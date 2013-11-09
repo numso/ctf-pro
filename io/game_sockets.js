@@ -98,7 +98,7 @@ function resetGame(){
 
   _.each(users, function(user){
     _.each(user, function(element, index, list){
-      if(typeof element === 'number'){
+      if(typeof element === 'number' && index != 'id'){
         list[index] = 0;
       }
     });
@@ -146,8 +146,6 @@ function connect(socket) {
     deaths: 0,
     ffire: 0
   };
-  teams[team].users[id] = user;
-  users[id] = user;
 
   ++game.connected;
 
@@ -170,6 +168,11 @@ function connect(socket) {
       }
     }
   });
+
+
+  teams[team].users[id] = user;
+  users[id] = user;
+
   socket.broadcast.emit('new', {
     id: user.id,
     team: team
@@ -186,20 +189,6 @@ function connect(socket) {
 
     delete teams[team].users[user.id];
     delete users[user.id];
-  });
-
-  socket.on('start', function(data){
-    if(!data.x) return;
-    if(!data.y) return;
-
-    user.x = data.x;
-    user.y = data.y;
-
-    socket.broadcast.emit('pos', {
-      id: user.id,
-      x: user.x,
-      y: user.y
-    });
   });
 
   socket.on('move', function(data){
@@ -256,20 +245,16 @@ function connect(socket) {
       ++users[data.id].ffire;
       ++teams[users[data.id].team].ffire;
       ++game.ffire;
-      
-      ++user.deaths;
-      ++teams[team].deaths;
-      ++game.deaths;
     } else {
       //Legit kill
       ++users[data.id].kills;
       ++teams[users[data.id].team].kills;
       ++game.kills;
-      
-      ++user.deaths;
-      ++teams[team].deaths;
-      ++game.deaths;
     }
+
+    ++user.deaths;
+    ++teams[team].deaths;
+    ++game.deaths;
   });
 
   socket.on('got', function(){
@@ -286,22 +271,22 @@ function connect(socket) {
     socket.broadcast.emit('drop', {
       id: user.id
     });
-  })
+  });
 
   socket.on('chat', function(data){
-    if(!data.msg) return;
+    if (!data.msg) return;
 
     var msg = {
       id: user.id,
       msg: data.msg
     };
 
-    if(data.msg.indexOf('/setNic ') === 0){
+    if (msg.msg.indexOf('/setNick ') === 0){
       var oldNick = user.nickname || user.id;
-      var newNick = data.msg.replace('/setNic', '');
-      data.msg = oldNick + ' is now known as ' + newNick;
-      data.nic = newNick;
+      var newNick = msg.msg.replace('/setNick ', '');
+      msg.msg = oldNick + ' is now known as ' + newNick;
       user.nickname = newNick;
+      return socket.broadcast.emit('msg', msg);
     }
 
     socket.emit('msg', msg);

@@ -1,8 +1,9 @@
-/* global PIXI, $, requestAnimationFrame, TESTMAP */
+/* global PIXI, $, requestAnimationFrame, TESTMAP, io, console, _ */
 'use strict';
 
 window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || function (cb) { window.setTimeout(cb, 1000 / 60); };
 
+var names = ['Donut', 'Penguin', 'Stumpy', 'Whicker', 'Shadow', 'Howard', 'Wilshire', 'Darling', 'Disco', 'Jack', 'The Bear', 'Sneak', 'The Big L', 'Whisp', 'Wheezy', 'Crazy', 'Goat', 'Pirate', 'Saucy', 'Hambone', 'Butcher', 'Walla Walla', 'Snake', 'Caboose', 'Sleepy', 'Killer', 'Stompy', 'Mopey', 'Dopey', 'Weasel', 'Ghost', 'Dasher', 'Grumpy', 'Hollywood', 'Tooth', 'Noodle', 'King', 'Cupid', 'Prancer'];
 var SPEED = 10;
 
 var assets = ['resources/player.json', 'img/bottom.png', 'img/middle.png'];
@@ -14,8 +15,9 @@ loader.load();
 
 
 var players = {};
-
 var socket;
+var gameInProgress = false;
+
 var renderer;
 var stage;
 var map;
@@ -49,8 +51,8 @@ function createPlayer() {
   var player = new PIXI.MovieClip(playerList);
   player.pivot.x = 10;
   player.pivot.y = 10;
-  player.position.x += 700;
-  player.position.y += 300;
+  player.position.x = 700;
+  player.position.y = 300;
   player._width = 20;
   player._height = 20;
   player.animationSpeed = 0.2;
@@ -87,6 +89,8 @@ function createMap() {
     }
   }
 
+  map.visible = false;
+
   return map;
 }
 
@@ -114,8 +118,10 @@ function loadMapTextures() {
 function animate() {
   renderer.render(stage);
   requestAnimationFrame(animate);
-  playerMovement(inputs);
-  networkUpdate();
+  if (gameInProgress) {
+    playerMovement(inputs);
+    networkUpdate();
+  }
 }
 
 function networkUpdate() {
@@ -179,7 +185,7 @@ function playerMovement(inputs) {
 }
 
 function move(x, y) {
-  if (detectCollision(map.position.x + x, map.position.y + y)){
+  if (detectCollision(map.position.x + (x * SPEED), map.position.y + (y * SPEED))) {
    return false;
   }
   map.position.x += x * SPEED;
@@ -232,12 +238,35 @@ window.addEventListener('keyup', function (e) {
   inputs[e.keyCode] = false;
 });
 
+function setStartCoords(team, isNew) {
+  var startX = team === 'a' ? 40   : 7720;
+  var endX   = team === 'a' ? 300  : 7940;
+  var startY = team === 'a' ? 760  : 600;
+  var endY   = team === 'a' ? 1500 : 1380;
+
+  var x = Math.floor(Math.random() * (endX - startX) + startX);
+  var y = Math.floor(Math.random() * (endY - startY) + startY);
+
+  map.position.x = player.position.x - x;
+  map.position.y = player.position.y - y;
+  map.visible = true;
+
+  sendCoords(x, y);
+
+  if (isNew) {
+    var nick = names[Math.floor(Math.random() * names.length)];
+    socket.emit('chat', { msg: '/setNick ' + nick });
+  }
+}
+
 function startIO() {
   socket = io.connect();
 
   socket.on('conn', function (data) {
-    console.log('conn');
-    console.log(data);
+    // console.log(data);
+    gameInProgress = data.go;
+    setStartCoords(data.team, true);
+    // data.teams.a and .b
   });
 
   socket.on('new', function (data) {
@@ -254,18 +283,35 @@ function startIO() {
   });
 
   socket.on('countdown', function (data) {
-    console.log('count');
+    $('#countdown').text('Game in ' + data.sec);
+  });
+
+  socket.on('go', function () {
+    $('#countdown').text('GO!!');
+    setTimeout(function () {
+      $('#countdown').text('');
+    }, 1000);
+    gameInProgress = true;
+  });
+
+  socket.on('stop', function () {
+    gameInProgress = false;
+  });
+
+  socket.on('togo', function (data) {
+    console.log('togo');
     console.log(data);
   });
 
-  socket.on('go', function (data) {
-    console.log('go');
+  socket.on('msg', function (data) {
+    console.log('msg');
     console.log(data);
   });
 }
 
 function sendCoords(x, y) {
   if (!socket) return;
+  // console.log(x,y);
   socket.emit('move', {
     x: x,
     y: y
