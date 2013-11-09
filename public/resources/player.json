@@ -1,0 +1,36 @@
+{"frames": [
+
+{
+	"filename": "guy1.png",
+	"frame": {"x":2,"y":2,"w":24,"h":26},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":24,"h":26},
+	"sourceSize": {"w":24,"h":26}
+},
+{
+	"filename": "guy2.png",
+	"frame": {"x":2,"y":30,"w":24,"h":25},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":24,"h":25},
+	"sourceSize": {"w":24,"h":25}
+},
+{
+	"filename": "guy3.png",
+	"frame": {"x":28,"y":2,"w":22,"h":25},
+	"rotated": true,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":22,"h":25},
+	"sourceSize": {"w":22,"h":25}
+}],
+"meta": {
+	"app": "http://www.codeandweb.com/texturepacker ",
+	"version": "1.0",
+	"image": "player.png",
+	"format": "RGBA8888",
+	"size": {"w":64,"h":64},
+	"scale": "1",
+	"smartupdate": "$TexturePacker:SmartUpdate:0285edced5bd8c514cd9985f7af8725c:1/1$"
+}
+}
