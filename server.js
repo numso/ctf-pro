@@ -7,7 +7,7 @@ require('nko')('tvIvWlrlsP5QwPsM');
 var    http = require('http'),
          fs = require('fs'),
     express = require('express'),
-     config = require('config'),
+     // config = require('config'),
        path = require('path'),
          io = require('socket.io');
 
