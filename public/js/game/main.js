@@ -13,6 +13,9 @@ loader.onComplete = function () {
 loader.load();
 
 
+var players = {};
+
+var socket;
 var renderer;
 var stage;
 var map;
@@ -111,6 +114,28 @@ function animate() {
   renderer.render(stage);
   requestAnimationFrame(animate);
   playerMovement(inputs);
+  networkUpdate();
+}
+
+function networkUpdate() {
+  for (var key in players) {
+    var player = players[key];
+
+    if (player.deleted) {
+      stage.removeChild(player.sprite);
+      delete players[key];
+      continue;
+    }
+
+    if (!player.sprite) {
+      player.sprite = createPlayer();
+      stage.addChild(player.sprite);
+      player.sprite.play();
+    }
+
+    player.sprite.position.x = player.x;
+    player.sprite.position.y = player.y;
+  }
 }
 
 function playerMovement(inputs) {
@@ -143,14 +168,18 @@ function playerMovement(inputs) {
     }
   }
 
-  var fn = moved ? 'play' : 'stop';
-  player[fn]();
-  rotate(desiredRot);
+  if (moved) {
+    player.play();
+    rotate(desiredRot);
+    sendCoords(player.position.x - map.position.x, player.position.y - map.position.y);
+  } else {
+    player.stop();
+  }
 }
 
 function move(x, y) {
   if (detectCollision(map.position.x + x, map.position.y + y)){
-   return false; 
+   return false;
   }
   map.position.x += x * SPEED;
   map.position.y += y * SPEED;
@@ -167,15 +196,16 @@ function detectCollision(x, y) {
   });
   return flag;
 }
-  
-function collides(obj, player, offsetX, offsetY) {
 
-  if(((offsetX - player.position.x) * -1) + player._width > obj.position.x && (offsetX - player.position.x) * -1 < obj.position.x + obj._width)
-    if(((offsetY - player.position.y) * -1) + player._height  > obj.position.y && (offsetY - player.position.y) * -1 < obj.position.y + obj._height)
+function collides(obj, player, offsetX, offsetY) {
+  var myX = player.position.x - offsetX;
+  var myY = player.position.y - offsetY;
+  if (myX + player._width > obj.position.x && myX < obj.position.x + obj._width)
+    if (myY + player._height  > obj.position.y && myY < obj.position.y + obj._height)
       return true;
 
   return false;
-};
+}
 
 function rotate(desiredRot) {
   if (!desiredRot || desiredRot === player.rotation) return;
@@ -203,22 +233,46 @@ window.addEventListener('keyup', function (e) {
 });
 
 function startIO() {
-  console.log('connecting');
-  var socket = io.connect();
-  console.log('connected');
+  socket = io.connect();
+
   socket.on('conn', function (data) {
+    console.log('conn');
     console.log(data);
   });
 
   socket.on('new', function (data) {
-    console.log(data);
+    players[data.id] = data;
+  });
+
+  socket.on('dis', function (data) {
+    players[data.id].deleted = true;
+  });
+
+  socket.on('pos', function (data) {
+    players[data.id] = players[data.id] || data;
+    getCoords(data.id, data.x, data.y);
   });
 
   socket.on('countdown', function (data) {
+    console.log('count');
     console.log(data);
   });
 
   socket.on('go', function (data) {
+    console.log('go');
     console.log(data);
   });
+}
+
+function sendCoords(x, y) {
+  if (!socket) return;
+  socket.emit('move', {
+    x: x,
+    y: y
+  });
+}
+
+function getCoords(id, x, y) {
+  players[id].x = x;
+  players[id].y = y;
 }
