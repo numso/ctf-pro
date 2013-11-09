@@ -5,6 +5,7 @@ window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequ
 
 var names = ['Donut', 'Penguin', 'Stumpy', 'Whicker', 'Shadow', 'Howard', 'Wilshire', 'Darling', 'Disco', 'Jack', 'The Bear', 'Sneak', 'The Big L', 'Whisp', 'Wheezy', 'Crazy', 'Goat', 'Pirate', 'Saucy', 'Hambone', 'Butcher', 'Walla Walla', 'Snake', 'Caboose', 'Sleepy', 'Killer', 'Stompy', 'Mopey', 'Dopey', 'Weasel', 'Ghost', 'Dasher', 'Grumpy', 'Hollywood', 'Tooth', 'Noodle', 'King', 'Cupid', 'Prancer'];
 var SPEED = 10;
+var newNicks = {};
 
 var assets = ['resources/player.json', 'img/bottom.png', 'img/middle.png'];
 var loader = new PIXI.AssetLoader(assets);
@@ -17,6 +18,7 @@ loader.load();
 var players = {};
 var socket;
 var gameInProgress = false;
+var yourTeam;
 
 var renderer;
 var stage;
@@ -36,7 +38,7 @@ function loadGame() {
   stage.addChild(map);
 
   player = createPlayer();
-  stage.addChild(player);
+  stage.addChild(player.sprite);
 
   startIO();
 
@@ -48,17 +50,28 @@ function createPlayer() {
   for (var i = 0; i < 3; ++i) {
     playerList.push(new PIXI.Texture.fromFrame(i));
   }
-  var player = new PIXI.MovieClip(playerList);
-  player.pivot.x = 10;
-  player.pivot.y = 10;
+  var player = new PIXI.DisplayObjectContainer();
   player.position.x = 700;
   player.position.y = 300;
   player._width = 20;
   player._height = 20;
-  player.animationSpeed = 0.2;
-  player.scale.x = 2;
-  player.scale.y = 2;
-  return player;
+
+  var playerSprite = new PIXI.MovieClip(playerList);
+  playerSprite.pivot.x = 10;
+  playerSprite.pivot.y = 10;
+  playerSprite.animationSpeed = 0.2;
+  playerSprite.scale.x = 2;
+  playerSprite.scale.y = 2;
+  player.addChild(playerSprite);
+
+  var nickName = new PIXI.Text('');
+  player.addChild(nickName);
+
+  return {
+    sprite: player,
+    dude: playerSprite,
+    nick: nickName
+  };
 }
 
 function createMap() {
@@ -120,8 +133,8 @@ function animate() {
   requestAnimationFrame(animate);
   if (gameInProgress) {
     playerMovement(inputs);
-    networkUpdate();
   }
+  networkUpdate();
 }
 
 function networkUpdate() {
@@ -129,15 +142,24 @@ function networkUpdate() {
     var player = players[key];
 
     if (player.deleted) {
-      map.removeChild(player.sprite);
+      if (player.sprite)
+        map.removeChild(player.sprite);
       delete players[key];
       continue;
     }
 
     if (!player.sprite) {
-      player.sprite = createPlayer();
+      var newP = createPlayer();
+      player.sprite = newP.sprite;
+      player.dude = newP.dude;
+      player.nick = newP.nick;
       map.addChild(player.sprite);
-      player.sprite.play();
+      player.dude.play();
+    }
+
+    if (newNicks[key]) {
+      setNick(newNicks[key], player);
+      delete newNicks[key];
     }
 
     player.sprite.position.x = player.x;
@@ -176,11 +198,11 @@ function playerMovement(inputs) {
   }
 
   if (moved) {
-    player.play();
-    rotate(desiredRot);
-    sendCoords(player.position.x - map.position.x, player.position.y - map.position.y);
+    player.dude.play();
+    rotate(player.dude, desiredRot);
+    sendCoords(player.sprite.position.x - map.position.x, player.sprite.position.y - map.position.y);
   } else {
-    player.stop();
+    player.dude.stop();
   }
 }
 
@@ -196,7 +218,7 @@ function move(x, y) {
 function detectCollision(x, y) {
   var flag = false;
   _.each(obstacles, function(obs) {
-    if (collides(obs, player, x, y)) {
+    if (collides(obs, player.sprite, x, y)) {
       flag = true;
     }
   });
@@ -213,7 +235,7 @@ function collides(obj, player, offsetX, offsetY) {
   return false;
 }
 
-function rotate(desiredRot) {
+function rotate(player, desiredRot) {
   if (!desiredRot || desiredRot === player.rotation) return;
 
   var playRot = toDegrees(player.rotation);
@@ -247,8 +269,8 @@ function setStartCoords(team, isNew) {
   var x = Math.floor(Math.random() * (endX - startX) + startX);
   var y = Math.floor(Math.random() * (endY - startY) + startY);
 
-  map.position.x = player.position.x - x;
-  map.position.y = player.position.y - y;
+  map.position.x = player.sprite.position.x - x;
+  map.position.y = player.sprite.position.y - y;
   map.visible = true;
 
   sendCoords(x, y);
@@ -256,17 +278,40 @@ function setStartCoords(team, isNew) {
   if (isNew) {
     var nick = names[Math.floor(Math.random() * names.length)];
     socket.emit('chat', { msg: '/setNick ' + nick });
+    setNick(nick, player);
   }
+}
+
+function setNick(nick, aPlayer) {
+  if (!aPlayer || !aPlayer.sprite) return;
+  var nickSprite = new PIXI.Text(nick);
+  nickSprite.position.x = -nickSprite.width / 2;
+  nickSprite.position.y = 35;
+  aPlayer.sprite.removeChild(aPlayer.nick);
+  aPlayer.nick = nickSprite;
+  aPlayer.sprite.addChild(aPlayer.nick);
 }
 
 function startIO() {
   socket = io.connect();
 
   socket.on('conn', function (data) {
-    // console.log(data);
+    console.log(data);
     gameInProgress = data.go;
-    setStartCoords(data.team, true);
-    // data.teams.a and .b
+    if (!gameInProgress) {
+      $('#countdown').text('WAITING FOR PLAYERS');
+    }
+    var yourTeam = data.team;
+    setStartCoords(yourTeam, true);
+
+    for (var key in data.teams.a.users) {
+      players[key] = data.teams.a.users[key];
+      newNicks[key] = players[key].nickname;
+    }
+    for (key in data.teams.b.users) {
+      players[key] = data.teams.b.users[key];
+      newNicks[key] = players[key].nickname;
+    }
   });
 
   socket.on('new', function (data) {
@@ -296,16 +341,22 @@ function startIO() {
 
   socket.on('stop', function () {
     gameInProgress = false;
+    setStartCoords(yourTeam);
+    $('#countdown').text('WAITING FOR PLAYERS');
+    if (t) clearInterval(t);
+    $('#timer').text('');
   });
 
   socket.on('togo', function (data) {
-    console.log('togo');
-    console.log(data);
+    setTimer(data.min);
   });
 
   socket.on('msg', function (data) {
     console.log('msg');
     console.log(data);
+    if (data.nick) {
+      newNicks[data.id] = data.nick;
+    }
   });
 }
 
@@ -321,4 +372,20 @@ function sendCoords(x, y) {
 function getCoords(id, x, y) {
   players[id].x = x;
   players[id].y = y;
+}
+
+
+var t;
+function setTimer(num) {
+  var mins = num;
+  var secs = 0;
+  if (t) clearInterval(t);
+  t = setInterval(function () {
+    secs -= 1;
+    if (secs < 0) {
+      secs += 60;
+      mins -= 1;
+    }
+    $('#timer').text(mins + ':' + secs);
+  }, 1000);
 }
