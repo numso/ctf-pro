@@ -1,5 +1,5 @@
 /* global angular */
-angular.module('nko-adalden', ['ui.bootstrap', 'ui.router', 'btford.socket-io']).config(
+angular.module('nko-adalden', ['ui.bootstrap', 'ui.router']).config(
   function ($stateProvider, $urlRouterProvider) {
     'use strict';
 

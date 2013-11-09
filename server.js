@@ -7,14 +7,20 @@ require('nko')('tvIvWlrlsP5QwPsM');
 var    http = require('http'),
          fs = require('fs'),
     express = require('express'),
-     config = require('config'),
+     // config = require('config'),
+       path = require('path'),
          io = require('socket.io');
 
 var app = express();
 
-app.set('port', process.env.PORT || config.port || 3000);
+var port = app.get('env') === 'production' ? 80 : 3000;
 
-var sessOptions = config.sessOptions;
+app.set('port', port);
+
+var sessOptions = {
+  key: 'adalden-NKO',
+  secret: 'tcndgy23cr875yfia.rpid345079pi80u9=c,h54df09.48rpich,3/9'
+};
 
 // all environments
 app.use(express.favicon());
@@ -25,7 +31,7 @@ app.use(express.cookieParser());
 app.use(express.session(sessOptions));
 app.use(app.router);
 app.use(require('stylus').middleware(__dirname + '/public'));
-app.use(express.static('public'));
+app.use(express.static(path.join(__dirname, 'public')));
 
 // development only
 if ('development' == app.get('env')) {
