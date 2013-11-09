@@ -7,7 +7,8 @@ require('nko')('tvIvWlrlsP5QwPsM');
 var    http = require('http'),
          fs = require('fs'),
     express = require('express'),
-     config = require('config');
+     config = require('config'),
+         io = require('socket.io');
 
 var app = express();
 
@@ -36,7 +37,17 @@ fs.readdirSync(__dirname + '/routes').forEach(function (file) {
   require('./routes/' + file)(app);
 });
 
-http.createServer(app).listen(app.get('port'), function (err) {
+// -+- Create the Server -+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
+var server = http.createServer(app);
+
+// -+- Load SocketIO -+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
+io = io.listen(server);
+fs.readdirSync(__dirname + '/io').forEach(function (file) {
+  require('./io/' + file)(io);
+});
+
+// -+- Start the Server +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
+server.listen(app.get('port'), function (err) {
   if (err) { console.error(err); process.exit(-1); }
 
   // if run as root, downgrade to the owner of this file
@@ -49,6 +60,7 @@ http.createServer(app).listen(app.get('port'), function (err) {
 
   console.log('Express server listening on port ' + app.get('port'));
 });
+
 
 
   // // http://blog.nodeknockout.com/post/35364532732/protip-add-the-vote-ko-badge-to-your-app
