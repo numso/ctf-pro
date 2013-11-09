@@ -251,7 +251,7 @@ function connect(socket) {
       ++teams[users[data.id].team].kills;
       ++game.kills;
     }
-      
+
     ++user.deaths;
     ++teams[team].deaths;
     ++game.deaths;
@@ -276,18 +276,18 @@ function connect(socket) {
   socket.on('chat', function(data){
     if(!data.msg) return;
 
-    var msg = {
-      id: user.id,
-      msg: data.msg
-    };
-
-    if(data.msg.indexOf('/setNic ') === 0){
+    if(data.msg.indexOf('/setNick ') === 0){
       var oldNick = user.nickname || user.id;
-      var newNick = data.msg.replace('/setNic ', '');
+      var newNick = data.msg.replace('/setNick ', '');
       data.msg = oldNick + ' is now known as ' + newNick;
       user.nickname = newNick;
       return socket.broadcast.emit('msg', msg);
     }
+
+    var msg = {
+      id: user.id,
+      msg: data.msg
+    };
 
     socket.emit('msg', msg);
     socket.broadcast.emit('msg', msg);
