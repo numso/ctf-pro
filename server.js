@@ -8,6 +8,7 @@ var    http = require('http'),
          fs = require('fs'),
     express = require('express'),
      config = require('config'),
+       path = require('path'),
          io = require('socket.io');
 
 var app = express();
@@ -30,7 +31,7 @@ app.use(express.cookieParser());
 app.use(express.session(sessOptions));
 app.use(app.router);
 app.use(require('stylus').middleware(__dirname + '/public'));
-app.use(express.static('public'));
+app.use(express.static(path.join(__dirname + 'public')));
 
 // development only
 if ('development' == app.get('env')) {
