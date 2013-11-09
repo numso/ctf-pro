@@ -1,0 +1,14 @@
+/* global angular */
+angular.module('nko-adalden', ['ui.bootstrap', 'ui.router']).config(
+  function ($stateProvider, $urlRouterProvider) {
+    'use strict';
+
+    $stateProvider.state('index', {
+      templateUrl: 'tmpl/main.html',
+      controller: 'mainCtrl',
+      url: '/'
+    });
+
+    $urlRouterProvider.otherwise('/');
+  }
+);
