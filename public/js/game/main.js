@@ -3,6 +3,8 @@
 
 window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || function (cb) { window.setTimeout(cb, 1000 / 60); };
 
+var SPEED = 10;
+
 var assets = ['resources/player.json', 'img/bottom.png', 'img/middle.png'];
 var loader = new PIXI.AssetLoader(assets);
 loader.onComplete = function () {
@@ -38,9 +40,11 @@ function createPlayer() {
     playerList.push(new PIXI.Texture.fromFrame(i));
   }
   var player = new PIXI.MovieClip(playerList);
+  player.pivot.x = 12;
+  player.pivot.y = 12;
+  player.position.x += 700;
+  player.position.y += 300;
   player.animationSpeed = 0.2;
-  player.position.x = 500;
-  player.position.y = 200;
   player.scale.x = 2;
   player.scale.y = 2;
   return player;
@@ -98,20 +102,29 @@ function loadMapTextures() {
 function animate() {
   renderer.render(stage);
   requestAnimationFrame(animate);
+  playerMovement(inputs);
+}
 
+function playerMovement(inputs) {
   var moved = false;
-  if (inputs[39]) {
-    moved = true;
-    map.position.x -= 20;
-    player.play();
-  }
+  if (inputs[37] && move(1, 0, Math.PI)) moved = true;
+  if (inputs[39] && move(-1, 0, 0)) moved = true;
+  if (inputs[38] && move(0, 1, Math.PI * 3 / 2)) moved = true;
+  if (inputs[40] && move(0, -1, Math.PI / 2)) moved = true;
 
-  if (inputs[38]) {
-    map.position.y += 20;
-    player.play();
-  } else {
-    player.stop();
-  }
+  var fn = moved ? 'play' : 'stop';
+  player[fn]();
+  rotate(0);
+}
+
+function move(x, y) {
+  map.position.x += x * SPEED;
+  map.position.y += y * SPEED;
+  return true;
+}
+
+function rotate(desiredRot) {
+  player.rotation = desiredRot;
 }
 
 window.addEventListener('keydown', function (e) {
