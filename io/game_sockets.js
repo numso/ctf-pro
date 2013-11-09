@@ -22,6 +22,7 @@ var teams = {
     shots: 0,
     stole: 0,
     deaths: 0,
+    ffire: 0,
     users: {}
   },
   b: {
@@ -30,6 +31,7 @@ var teams = {
     shots: 0,
     stole: 0,
     deaths: 0,
+    ffire: 0;
     users: {}
   }
 };
@@ -42,7 +44,8 @@ function initGame(){
     kills: 0,
     shots: 0,
     stole: 0,
-    deaths: 0
+    deaths: 0,
+    ffire: 0
   }
 }
 
@@ -74,7 +77,8 @@ function connect(socket) {
     kills: 0,
     shots: 0,
     stole: 0,
-    deaths: 0
+    deaths: 0,
+    ffire: 0
   };
   teams[team].users[id] = user;
   users[id] = user;
@@ -153,13 +157,25 @@ function connect(socket) {
   socket.on('kill', function(data){
     if(!data.id) return;
 
-    ++users[data.id].kills;
-    ++teams[users[data.id].team].kills;
-    ++game.kills;
-    
-    ++user.deaths;
-    ++teams[team].deaths;
-    ++game.deaths;
+    if(user.team == users[data.id].team){
+      //Friendly fire
+      ++users[data.id].ffire;
+      ++teams[users[data.id].team].ffire;
+      ++game.ffire;
+      
+      ++user.deaths;
+      ++teams[team].deaths;
+      ++game.deaths;
+    } else {
+      //Legit kill
+      ++users[data.id].kills;
+      ++teams[users[data.id].team].kills;
+      ++game.kills;
+      
+      ++user.deaths;
+      ++teams[team].deaths;
+      ++game.deaths;
+    }
   });
 
   socket.on('got', function(){
