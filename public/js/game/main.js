@@ -129,7 +129,7 @@ function networkUpdate() {
 
     if (!player.sprite) {
       player.sprite = createPlayer();
-      stage.addChild(player.sprite);
+      map.addChild(player.sprite);
       player.sprite.play();
     }
 
