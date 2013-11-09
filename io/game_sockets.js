@@ -37,33 +37,72 @@ var teams = {
     users: {}
   }
 };
-var game = initGame();
+var game = {
+  started: false,
+  countdown: false,
+  connected: 0,
+  points: 0,
+  kills: 0,
+  shots: 0,
+  stole: 0,
+  deaths: 0,
+  ffire: 0,
+  teams: teams
+};
 
-function initGame(){
-  return {
-    started: false,
-    countdown: false,
-    connected: 0,
-    points: 0,
-    kills: 0,
-    shots: 0,
-    stole: 0,
-    deaths: 0,
-    ffire: 0
-  }
-}
-
-function countdown(togo){
+function countdown(togo){ //togo is seconds
   if(togo == 0){
     game.started = true;
-    game.ccountdown = false;
+    game.countdown = false;
     mainIO.sockets.emit('go');
+    gameleft(15);
   } else {
     mainIO.sockets.emit('countdown', {
       sec: togo
     });
     setTimeout(countdown, 1000, togo - 1);
   }
+}
+
+function gameleft(togo){ //togo is minutes
+  if(togo == 0){
+    game.started = false;
+    mainIO.sockets.emit('stop', game);
+
+    resetGame();
+    game.countdown = true;
+    game.started = false;
+    countdown(15);
+  } else {
+    main.IO.sockets.emit('togo', {
+      min: togo
+    });
+    setTimeout(gameleft, 1000 * 60, togo - 1);
+  }
+}
+
+function resetGame(){
+  _.each(game, function(element, index, list){
+    if(typeof element === 'number'){
+      list[index] = 0;
+    }
+  })
+
+  _.each(users, function(user){
+    _.each(user, function(element, index, list){
+      if(typeof element === 'number'){
+        list[index] = 0;
+      }
+    });
+  });
+
+  _.each(teams, function(team){
+    _.each(team, function(element, index, list){
+      if(typeof element === 'number'){
+        list[index] = 0;
+      }
+    });
+  });
 }
 
 function getID(){
@@ -118,6 +157,8 @@ function connect(socket) {
     socket.broadcast.emit('dis', {
       id: user.id
     });
+    delete teams[team].users[user.id];
+    delete users[user.id];
   });
 
   socket.on('start', function(data){
