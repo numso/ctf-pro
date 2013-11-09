@@ -20,6 +20,7 @@ var renderer;
 var stage;
 var map;
 var player;
+var gun;
 var inputs = [];
 var obstacles = [];
 
@@ -187,7 +188,6 @@ function move(x, y) {
 }
 
 function detectCollision(x, y) {
-  // console.log((x- player.position.x) * -1 - player._width, (y-player.position.y) * -1 - player._height);
   var flag = false;
   _.each(obstacles, function(obs) {
     if (collides(obs, player, x, y)) {
