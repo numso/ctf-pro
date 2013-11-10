@@ -192,8 +192,8 @@ function connect(socket) {
   });
 
   socket.on('move', function(data){
-    if(!data.x) return;
-    if(!data.y) return;
+    if(data.x === undefined) return;
+    if(data.y === undefined) return;
 
     user.x = data.x;
     user.y = data.y;
@@ -225,9 +225,9 @@ function connect(socket) {
   });
 
   socket.on('shot', function(data){
-    if(!data.x) return;
-    if(!data.y) return;
-    if(!data.d) return;
+    if(data.x === undefined) return;
+    if(data.y === undefined) return;
+    if(data.d === undefined) return;
     data.id = user.id;
 
     ++user.shots;
@@ -269,8 +269,8 @@ function connect(socket) {
   });
 
   socket.on('drop', function(data){
-    if(!data.x) return;
-    if(!data.y) return;
+    if(data.x === undefined) return;
+    if(data.y === undefined) return;
 
     socket.broadcast.emit('drop', {
       id: user.id,
