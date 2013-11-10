@@ -268,9 +268,21 @@ function connect(socket) {
     });
   });
 
-  socket.on('drop', function(){
+  socket.on('drop', function(data){
+    if(!data.x) return;
+    if(!data.y) return;
+
     socket.broadcast.emit('drop', {
-      id: user.id
+      id: user.id,
+      x: data.x,
+      y: data.y
+    });
+  });
+
+  socket.on('return', function(data){
+    socket.broadcast.emit('return', {
+      id: user.id,
+      team: team
     });
   });
 
