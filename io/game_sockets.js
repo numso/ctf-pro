@@ -354,7 +354,7 @@ function connect(socket) {
       team: team
     });
 
-    delete flags[team];
+    delete flags[team] = undefined;
 
     alert((user.nickname || user.id) + ' has returned the flag!');
   });
