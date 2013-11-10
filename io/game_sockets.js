@@ -178,6 +178,8 @@ function connect(socket) {
   teams[team].users[id] = user;
   users[id] = user;
 
+  adminChat('Welcome to CTF Pro! Press "t" to chat!');
+
   socket.broadcast.emit('new', {
     id: user.id,
     team: team
@@ -191,7 +193,17 @@ function connect(socket) {
     });
   }
 
+  function adminChat(msg){
+    mainIO.sockets.emit('msg', {
+      id: -1,
+      admin: 'Admin',
+      msg: msg
+    });
+  }
+
   socket.on('disconnect', function(){
+    adminChat(user.nickname + ' has left the game');
+    
     socket.broadcast.emit('dis', {
       id: user.id
     });
@@ -292,11 +304,7 @@ function connect(socket) {
       b: game.teams.b.kills
     });
 
-    mainIO.sockets.emit('chat', {
-      id: -1,
-      name: 'Admin',
-      msg: (users[data.id].nickname || users[data.id].id) + ' killed ' + (user.name || user.id)
-    });
+    adminChat((users[data.id].nickname || users[data.id].id) + ' killed ' + (user.name || user.id));
   });
 
   socket.on('got', function(){
@@ -360,6 +368,9 @@ function connect(socket) {
       var newNick = msg.msg.replace('/setNick ', '');
       msg.msg = oldNick + ' is now known as ' + newNick;
       msg.nick = newNick;
+
+      if(!user.nickname) adminChat('Welcome to ' + newNick);
+
       user.nickname = newNick;
       return socket.broadcast.emit('msg', msg);
     }

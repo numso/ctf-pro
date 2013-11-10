@@ -6,6 +6,7 @@ window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequ
 var names = ['Donut', 'Penguin', 'Stumpy', 'Whicker', 'Shadow', 'Howard', 'Wilshire', 'Darling', 'Disco', 'Jack', 'The Bear', 'Sneak', 'The Big L', 'Whisp', 'Wheezy', 'Crazy', 'Goat', 'Pirate', 'Saucy', 'Hambone', 'Butcher', 'Walla Walla', 'Snake', 'Caboose', 'Sleepy', 'Killer', 'Stompy', 'Mopey', 'Dopey', 'Weasel', 'Ghost', 'Dasher', 'Grumpy', 'Hollywood', 'Tooth', 'Noodle', 'King', 'Cupid', 'Prancer'];
 var SPEED = 10;
 var BULLETSPEED = 3;
+var NUM_MESSAGES = 10;
 var newNicks = {};
 
 var assets = ['resources/player.json', 'resources/player2.json', 'img/bottom.png', 'img/middle.png', '/img/redFlag.png', '/img/blueFlag.png', '/img/blueFlagIcon.png', '/img/redFlagIcon.png', '/img/skull.png'];
@@ -60,35 +61,36 @@ var gameMusic = new Howl({
 });
 
 var muted = false;
-$('#muteButton').click(mute);
+var $muteButton = $('#muteButton');
+$muteButton.click(mute);
 
 var chatHidden = false;
-$('#chatButton').click(hideChat);
+var $chatButton = $('#chatButton');
+$chatButton.click(hideChat);
+var $allChats = $('#allChats');
 
 function hideChat() {
-  var $this = $(this);
   chatHidden = !chatHidden;
   if (chatHidden) {
-    // DO SOMETHING
-    $this.text('Show Chat (c)');
+    $allChats.hide();
+    $chatButton.text('Show Chat (c)');
   } else {
-    // DO SOMETHING
-    $this.text('Hide Chat (c)');
+    $allChats.show();
+    $chatButton.text('Hide Chat (c)');
   }
-  $this.blur();
+  $chatButton.blur();
 }
 
 function mute() {
-  var $this = $(this);
   muted = !muted;
   if (muted) {
     Howler.mute();
-    $this.text('Unmute (m)');
+    $muteButton.text('Unmute (m)');
   } else {
     Howler.unmute();
-    $this.text('Mute (m)');
+    $muteButton.text('Mute (m)');
   }
-  $this.blur();
+  $muteButton.blur();
 }
 
 function loadGame() {
@@ -613,6 +615,22 @@ function toRadians(angle) {
 
 window.addEventListener('keydown', function (e) {
   inputs[e.keyCode] = true;
+
+  if (e.keyCode === 77) {
+    mute();
+  }
+
+  if (e.keyCode === 67) {
+    hideChat();
+  }
+
+  if (e.keyCode === 84) {
+    focusMsgBox();
+  }
+
+  if (e.keyCode === 191) {
+    focusMsgBox('/');
+  }
 });
 
 window.addEventListener('keyup', function (e) {
@@ -760,12 +778,22 @@ function startIO() {
   });
 
   socket.on('msg', function (data) {
-    console.log('msg');
-    console.log(data);
     if (data.nick) {
       newNicks[data.id] = data.nick;
       drawTeams();
     }
+
+    var text = (data.id === -1) ? data.msg : (data.name + ': ' + data.msg);
+    var msg = $('<span>').text(text);
+    if (data.team) msg.addClass(data.team);
+
+    $allChats.append(msg);
+
+    var children = $allChats.children();
+    var len = children.length - NUM_MESSAGES;
+    if (len > 0)
+      for (var i = 0; i < len; ++i)
+        children[i].remove();
   });
 
   socket.on('alert', function (data) {
@@ -815,6 +843,43 @@ function setAlertText(text, timeout, team) {
   if (timeout) {
     alertsTimeout = setTimeout(function () {
       $alerts.text('');
+      $alerts.removeClass('a');
+      $alerts.removeClass('b');
     }, timeout);
   }
+}
+
+var $chatBox = $('#chatBox');
+$chatBox.on('keydown', function (e) {
+  if (e.keyCode === 27) {
+    $chatBox.blur();
+  } else if (e.keyCode === 13) {
+    var msg = $chatBox.val();
+    console.log(msg);
+    if (msg) {
+      socket.emit('chat', { msg: msg });
+      if (msg.indexOf('/setNick ') === 0) {
+        setNick(msg.replace('/setNick ', ''), player);
+      }
+    }
+    $chatBox.blur();
+  }
+
+  e.stopPropagation();
+});
+
+$chatBox.on('blur', killMsgBox);
+
+function killMsgBox() {
+  $chatBox.val('');
+  $chatBox.hide();
+}
+
+function focusMsgBox(msg) {
+  if (chatHidden) hideChat();
+  $chatBox.show();
+  $chatBox.focus();
+  setTimeout(function () {
+    $chatBox.val(msg || '');
+  });
 }

@@ -30,6 +30,11 @@ canvas
   color: white
   z-index: 1
 
+  .a,
+  .b
+    background-color: rgba(0,0,0,.5)
+    padding: 20px
+
 #timer
   text-align: center
   padding-top: 25px
@@ -43,12 +48,36 @@ button
   margin-right: 10px
   margin-top: 10px
 
-#alerts.a
-  color: red
-  background-color: rgba(0,0,0,.5)
-  padding: 20px
+.a
+  color: red !important
 
-#alerts.b
-  color: rgb(110, 110, 255)
-  background-color: rgba(0,0,0,.5)
-  padding: 20px
+.b
+  color: rgb(110, 110, 255) !important
+
+.the-stuffs
+  float: right
+
+#allChats
+  position: absolute
+  bottom: 0
+  z-index: 2
+  margin-left: 100px
+  margin-bottom: 100px
+  padding: 10px
+  background-color: rgba(0,0,0,.7)
+  min-width: 400px
+
+  span
+    color: white
+    font-size: 18px
+    display: block
+
+#chatBox
+  position: absolute
+  bottom: 0
+  margin-bottom: 70px
+  margin-left: 100px
+  z-index: 2
+  left: 0
+  width: 400px
+  display: none
