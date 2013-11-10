@@ -706,25 +706,29 @@ function startIO() {
 
     if (data.teams.a.flag) {
       if (data.teams.a.flag.id) {
-        console.log('SET A\'s FLAG TO BE CARRIED BY ' + data.teams.a.flag.id);
+        players[data.teams.a.flag.id].gotFlag.visible = true;
+        blueFlag.visible = false;
       } else {
-        console.log('SET A\'s FLAG TO BE AT ' + data.teams.a.flag.x + ', ' + data.teams.a.flag.y);
+        blueFlag.position.x = data.teams.a.flag.x;
+        blueFlag.position.y = data.teams.a.flag.y;
+        blueFlag.visible = true;
       }
     }
 
     if (data.teams.b.flag) {
       if (data.teams.b.flag.id) {
-        console.log('SET B\'s FLAG TO BE CARRIED BY ' + data.teams.b.flag.id);
+        players[data.teams.b.flag.id].gotFlag.visible = true;
+        redFlag.visible = false;
       } else {
-        console.log('SET B\'s FLAG TO BE AT ' + data.teams.b.flag.x + ', ' + data.teams.b.flag.y);
+        redFlag.position.x = data.teams.b.flag.x;
+        redFlag.position.y = data.teams.b.flag.y;
+        redFlag.visible = true;
       }
     }
 
-    console.log('SET THE KILL COUNT FOR A TO BE ' + data.teams.a.kills);
-    console.log('SET THE KILL COUNT FOR B TO BE ' + data.teams.b.kills);
-
-    console.log('SET THE POINTS FOR A TO BE ' + data.teams.a.points);
-    console.log('SET THE POINTS FOR B TO BE ' + data.teams.b.points);
+    console.log(data);
+    setKills(data.teams.a.kills, data.teams.b.kills);
+    setScores(data.teams.a.points, data.teams.b.points);
   });
 
   socket.on('new', function (data) {
