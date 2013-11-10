@@ -21,7 +21,7 @@ canvas {
   bottom: 0;
   right: 0;
 }
-#countdown {
+#alerts {
   font-size: 36px;
   font-weight: bold;
   text-align: center;
@@ -37,7 +37,7 @@ canvas {
 h1 {
   float: left;
 }
-#muteButton {
+button {
   float: right;
   margin-right: 10px;
   margin-top: 10px;

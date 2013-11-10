@@ -57,18 +57,36 @@ var gameMusic = new Howl({
 });
 
 var muted = false;
-$('#muteButton').click(function () {
+$('#muteButton').click(mute);
+
+var chatHidden = false;
+$('#chatButton').click(hideChat);
+
+function hideChat() {
+  var $this = $(this);
+  chatHidden = !chatHidden;
+  if (chatHidden) {
+    // DO SOMETHING
+    $this.text('Show Chat (c)');
+  } else {
+    // DO SOMETHING
+    $this.text('Hide Chat (c)');
+  }
+  $this.blur();
+}
+
+function mute() {
   var $this = $(this);
   muted = !muted;
   if (muted) {
     Howler.mute();
-    $this.text('Unmute');
+    $this.text('Unmute (m)');
   } else {
     Howler.unmute();
-    $this.text('Mute');
+    $this.text('Mute (m)');
   }
   $this.blur();
-});
+}
 
 function loadGame() {
   renderer = new PIXI.autoDetectRenderer(1400, 600);
@@ -273,7 +291,7 @@ function deathSequence(aPlayer) {
     if (aPlayer.gotFlag.visible) {
       var flag = yourTeam == 'a' ? blueFlag : redFlag;
       flag.position.x = aPlayer.sprite.position.x - map.position.x;
-      flag.position.y = aPlayer.sprite.position.y - map.position.y; 
+      flag.position.y = aPlayer.sprite.position.y - map.position.y;
       flag.visible = true;
 
       player.gotFlag.visible = false;
@@ -553,7 +571,7 @@ function startIO() {
 
     gameInProgress = data.go;
     if (!gameInProgress) {
-      $('#countdown').text('WAITING FOR PLAYERS TO JOIN');
+      setAlertText('WAITING FOR PLAYERS TO JOIN');
       intro.play().fade(0, 1);
     } else {
       gameMusic.play();
@@ -615,14 +633,11 @@ function startIO() {
   });
 
   socket.on('countdown', function (data) {
-    $('#countdown').text('Game in ' + data.sec);
+    setAlertText('Game in ' + data.sec);
   });
 
   socket.on('go', function () {
-    $('#countdown').text('GO!!');
-    setTimeout(function () {
-      $('#countdown').text('');
-    }, 1000);
+    setAlertText('GO!!', 1000);
     gameInProgress = true;
     intro.stop();
     gameMusic.play();
@@ -633,7 +648,7 @@ function startIO() {
     intro.play();
     gameInProgress = false;
     setStartCoords(yourTeam);
-    $('#countdown').text('WAITING FOR PLAYERS TO JOIN');
+    setAlertText('WAITING FOR PLAYERS TO JOIN');
     if (t) clearInterval(t);
     $('#timer').text('');
   });
@@ -652,6 +667,10 @@ function startIO() {
     if (data.nick) {
       newNicks[data.id] = data.nick;
     }
+  });
+
+  socket.on('alert', function (data) {
+    setAlertText(data.msg, 1500, data.team);
   });
 }
 
@@ -684,4 +703,19 @@ function setTimer(num) {
     var secShow = ((secs < 10) ? '0' : '') + secs;
     $('#timer').text(minShow + secShow);
   }, 1000);
+}
+
+var alertsTimeout;
+var $alerts = $('#alerts');
+function setAlertText(text, timeout, team) {
+  if (alertsTimeout) clearTimeout(alertsTimeout);
+  $alerts.removeClass('a');
+  $alerts.removeClass('b');
+  if (team) $alerts.addClass(team);
+  $alerts.text(text);
+  if (timeout) {
+    alertsTimeout = setTimeout(function () {
+      $alerts.text('');
+    }, timeout);
+  }
 }
