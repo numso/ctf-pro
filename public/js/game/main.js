@@ -33,6 +33,7 @@ var blueScore, redScore;
 var blueKillsIcon, redKillsIcon;
 var redKills, blueKills;
 var kills;
+var playerNames = {};
 var inputs = [];
 var obstacles = [];
 var flagCoords = {
@@ -148,6 +149,31 @@ function setKills(red, blue) {
   stage.addChild(blueKills);
 }
 
+function drawTeams() {
+  var teams = [];
+  var posY = 150;
+  for(var key in newNicks) {
+    if (playerNames[key]) {
+      stage.removeChild(playerNames[key].sprite);
+    }
+    var thisPlayer = newNicks[key];
+    thisPlayer.nick = thisPlayer.nick ? thisPlayer.nick : 'Unkown';
+    console.log(thisPlayer);
+    var member = new PIXI.Text(thisPlayer, {
+      fill: players[key].team == 'a' ? '#FF0000' : '#0000FF',
+      font: 'bold 15pt Arial'
+    });
+    member.position.x = players[key].team == 'a' ? 10 : 1300;
+    member.position.y = posY;
+
+    posY += 50;
+    playerNames[key] = {
+      sprite: member
+    };
+    stage.addChild(member);
+  }
+}
+
 function setScores(red, blue) {
   if (redScore) stage.removeChild(redScore);
   if (blueScore) stage.removeChild(blueScore);
@@ -218,7 +244,6 @@ function createSkull(location, x, y) {
   skull.position.y = y;
   skull.width = 50;
   skull.height = 50;
-
   return skull;
 };
 
@@ -629,9 +654,7 @@ function setNick(nick, aPlayer) {
 
 function startIO() {
   socket = io.connect();
-
   socket.on('conn', function (data) {
-    console.log(data);
     player = createPlayer(data.team);
     stage.addChild(player.sprite);
 
@@ -657,6 +680,7 @@ function startIO() {
 
   socket.on('new', function (data) {
     players[data.id] = data;
+    drawTeams();
   });
 
   socket.on('got', function (data) {
@@ -740,6 +764,7 @@ function startIO() {
     console.log(data);
     if (data.nick) {
       newNicks[data.id] = data.nick;
+      drawTeams();
     }
   });
 
