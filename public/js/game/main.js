@@ -703,6 +703,28 @@ function startIO() {
       players[key] = data.teams.b.users[key];
       newNicks[key] = players[key].nickname;
     }
+
+    if (data.teams.a.flag) {
+      if (data.teams.a.flag.id) {
+        console.log('SET A\'s FLAG TO BE CARRIED BY ' + data.teams.a.flag.id);
+      } else {
+        console.log('SET A\'s FLAG TO BE AT ' + data.teams.a.flag.x + ', ' + data.teams.a.flag.y);
+      }
+    }
+
+    if (data.teams.b.flag) {
+      if (data.teams.b.flag.id) {
+        console.log('SET B\'s FLAG TO BE CARRIED BY ' + data.teams.b.flag.id);
+      } else {
+        console.log('SET B\'s FLAG TO BE AT ' + data.teams.b.flag.x + ', ' + data.teams.b.flag.y);
+      }
+    }
+
+    console.log('SET THE KILL COUNT FOR A TO BE ' + data.teams.a.kills);
+    console.log('SET THE KILL COUNT FOR B TO BE ' + data.teams.b.kills);
+
+    console.log('SET THE POINTS FOR A TO BE ' + data.teams.a.points);
+    console.log('SET THE POINTS FOR B TO BE ' + data.teams.b.points);
   });
 
   socket.on('new', function (data) {
@@ -794,6 +816,7 @@ function startIO() {
     if (data.nick) {
       newNicks[data.id] = data.nick;
       drawTeams();
+      return;
     }
 
     var text = (data.id === -1) ? data.msg : (data.name + ': ' + data.msg);
