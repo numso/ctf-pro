@@ -434,6 +434,10 @@ function networkUpdate() {
       player.dude = newP.dude;
       player.nick = newP.nick;
       player.gotFlag = newP.gotFlag;
+      if (player.iHazDaFlag) {
+        player.gotFlag.visible = true;
+        delete player.iHazDaFlag;
+      }
       map.addChild(player.sprite);
     }
 
@@ -543,7 +547,8 @@ function move(x, y) {
 
   var enemyFlag = yourTeam == 'a' ? blueFlag : redFlag;
   var yourFlag = yourTeam == 'a' ? redFlag : blueFlag;
-  var coords = yourTeam == 'a' ? flagCoords.redFlag : flagCoords.blueFlag;
+  var yourCoords = yourTeam == 'a' ? flagCoords.redFlag : flagCoords.blueFlag;
+  var enemyCoords = yourTeam == 'a' ? flagCoords.blueFlag : flagCoords.redFlag;
 
   if (collideFlag(map.position.x, map.position.y, enemyFlag.position.x, enemyFlag.position.y)) {
     if (enemyFlag.visible) {
@@ -552,14 +557,15 @@ function move(x, y) {
       socket.emit('got');
     }
   }
-  if (collideFlag(map.position.x, map.position.y, coords.x, coords.y) && player.gotFlag.visible) {
+  if (collideFlag(map.position.x, map.position.y, yourCoords.x, yourCoords.y) && player.gotFlag.visible) {
     player.gotFlag.visible = false;
+    enemyFlag.position.x = enemyCoords.x;
+    enemyFlag.position.y = enemyCoords.y;
     enemyFlag.visible = true;
     socket.emit('point');
-  } else if (collideFlag(map.position.x, map.position.y, yourFlag.position.x, yourFlag.position.y)
-    && yourFlag.position.x != coords.x && yourFlag.position.y != coords.y) {
-    yourFlag.position.x = coords.x;
-    yourFlag.position.y = coords.y;
+  }else if (collideFlag(map.position.x, map.position.y, yourFlag.position.x, yourFlag.position.y) && yourFlag.position.x != yourCoords.x && yourFlag.position.y != yourCoords.y) {
+    yourFlag.position.x = yourCoords.x;
+    yourFlag.position.y = yourCoords.y;
     socket.emit('return');
   }
   return true;
@@ -687,6 +693,10 @@ function startIO() {
 
     gameInProgress = data.go;
     if (!gameInProgress) {
+      redFlag.position.x = flagCoords.redFlag.x;
+      redFlag.position.y = flagCoords.redFlag.y;
+      blueFlag.position.x = flagCoords.blueFlag.x;
+      blueFlag.position.y = flagCoords.blueFlag.y;
       setAlertText('WAITING FOR PLAYERS TO JOIN');
       intro.play().fade(0, 1);
     } else {
@@ -706,7 +716,8 @@ function startIO() {
 
     if (data.teams.a.flag) {
       if (data.teams.a.flag.id) {
-        players[data.teams.a.flag.id].gotFlag.visible = true;
+        console.log(data.teams.a.flag.id);
+        players[data.teams.a.flag.id].iHazDaFlag = true;
         blueFlag.visible = false;
       } else {
         blueFlag.position.x = data.teams.a.flag.x;
@@ -717,7 +728,8 @@ function startIO() {
 
     if (data.teams.b.flag) {
       if (data.teams.b.flag.id) {
-        players[data.teams.b.flag.id].gotFlag.visible = true;
+        console.log(data.teams.b.flag.id);
+        players[data.teams.b.flag.id].iHazDaFlag = true;
         redFlag.visible = false;
       } else {
         redFlag.position.x = data.teams.b.flag.x;
@@ -726,7 +738,6 @@ function startIO() {
       }
     }
 
-    console.log(data);
     setKills(data.teams.a.kills, data.teams.b.kills);
     setScores(data.teams.a.points, data.teams.b.points);
   });
@@ -760,6 +771,7 @@ function startIO() {
 
   socket.on('point', function (data) {
     if (players[data.id]) {
+      players[data.id].gotFlag.visible = false;
       var enemyFlag = players[data.id].team == 'a' ? blueFlag : redFlag;
       var coords = players[data.id].team == 'a' ? flagCoords.blueFlag : flagCoords.redFlag;
       enemyFlag.position.x = coords.x;
