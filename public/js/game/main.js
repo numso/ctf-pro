@@ -66,9 +66,6 @@ function loadGame() {
   map = createMap();
   stage.addChild(map);
 
-  player = createPlayer();
-  stage.addChild(player.sprite);
-
   redFlag = createFlag('/img/redFlag.png', 100, 1140);
   blueFlag = createFlag('/img/blueFlag.png', 7935, 890);
   map.addChild(redFlag);
@@ -83,7 +80,6 @@ function createPlayer(team) {
   team = team || 'a';
 
   var playerList = [];
-  console.log(PIXI.TextureCache);
   for (var i = 0; i < 3; ++i) {
     playerList.push(new PIXI.Texture.fromFrame(team + i));
   }
@@ -261,7 +257,8 @@ function networkUpdate() {
     }
 
     if (!player.sprite) {
-      var newP = createPlayer();
+      console.log(player);
+      var newP = createPlayer(player.team);
       player.sprite = newP.sprite;
       player.dude = newP.dude;
       player.nick = newP.nick;
@@ -485,7 +482,9 @@ function startIO() {
   socket = io.connect();
 
   socket.on('conn', function (data) {
-    console.log(data);
+    player = createPlayer(data.team);
+    stage.addChild(player.sprite);
+
     gameInProgress = data.go;
     if (!gameInProgress) {
       $('#countdown').text('WAITING FOR PLAYERS');
