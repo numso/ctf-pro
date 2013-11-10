@@ -699,6 +699,7 @@ function startIO() {
   });
 
   socket.on('alert', function (data) {
+    console.log(data);
     setAlertText(data.msg, 1500, data.team);
   });
 }
@@ -757,7 +758,6 @@ $chatBox.on('keydown', function (e) {
     $chatBox.blur();
   } else if (e.keyCode === 13) {
     var msg = $chatBox.val();
-    console.log(msg);
     if (msg) {
       socket.emit('chat', { msg: msg });
       if (msg.indexOf('/setNick ') === 0) {
