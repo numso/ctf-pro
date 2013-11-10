@@ -6,6 +6,7 @@ window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequ
 var names = ['Donut', 'Penguin', 'Stumpy', 'Whicker', 'Shadow', 'Howard', 'Wilshire', 'Darling', 'Disco', 'Jack', 'The Bear', 'Sneak', 'The Big L', 'Whisp', 'Wheezy', 'Crazy', 'Goat', 'Pirate', 'Saucy', 'Hambone', 'Butcher', 'Walla Walla', 'Snake', 'Caboose', 'Sleepy', 'Killer', 'Stompy', 'Mopey', 'Dopey', 'Weasel', 'Ghost', 'Dasher', 'Grumpy', 'Hollywood', 'Tooth', 'Noodle', 'King', 'Cupid', 'Prancer'];
 var SPEED = 10;
 var BULLETSPEED = 3;
+var NUM_MESSAGES = 10;
 var newNicks = {};
 
 var assets = ['resources/player.json', 'resources/player2.json', 'img/bottom.png', 'img/middle.png', '/img/redFlag.png', '/img/blueFlag.png', '/img/blueFlagIcon.png', '/img/redFlagIcon.png'];
@@ -63,14 +64,15 @@ $muteButton.click(mute);
 var chatHidden = false;
 var $chatButton = $('#chatButton');
 $chatButton.click(hideChat);
+var $allChats = $('#allChats');
 
 function hideChat() {
   chatHidden = !chatHidden;
   if (chatHidden) {
-    $('#allChats').hide();
+    $allChats.hide();
     $chatButton.text('Show Chat (c)');
   } else {
-    $('#allChats').show();
+    $allChats.show();
     $chatButton.text('Hide Chat (c)');
   }
   $chatButton.blur();
@@ -687,7 +689,13 @@ function startIO() {
     var msg = $('<span>').text(text);
     if (data.team) msg.addClass(data.team);
 
-    $('#allChats').append(msg);
+    $allChats.append(msg);
+
+    var children = $allChats.children();
+    var len = children.length - NUM_MESSAGES;
+    if (len > 0)
+      for (var i = 0; i < len; ++i)
+        children[i].remove();
   });
 
   socket.on('alert', function (data) {
@@ -761,10 +769,11 @@ $chatBox.on('blur', killMsgBox);
 
 function killMsgBox() {
   $chatBox.val('');
-  // here is where you will rehide it
+  $chatBox.hide();
 }
 
 function focusMsgBox(msg) {
+  $chatBox.show();
   $chatBox.focus();
   setTimeout(function () {
     $chatBox.val(msg || '');
