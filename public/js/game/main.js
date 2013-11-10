@@ -21,6 +21,8 @@ var socket;
 var gameInProgress = false;
 var yourTeam;
 
+var allTeamText = [];
+
 var bullets = [];
 var gunCoolDown = 0;
 
@@ -144,7 +146,7 @@ function setKills(red, blue) {
 
   redKills.position.x = 75;
   redKills.position.y = 60;
-  blueKills.position.x = 1300;
+  blueKills.position.x = 1329 - blueKills.width;
   blueKills.position.y = 60;
 
   stage.addChild(redKills);
@@ -152,37 +154,40 @@ function setKills(red, blue) {
 }
 
 function drawTeams() {
-  var teams = [];
+  for (var i = 0; i < allTeamText.length; ++i) {
+    stage.removeChild(allTeamText[i]);
+  }
+  allTeamText = [];
+
   var posY = {
-    red: 100,
-    blue: 100
+    red: 120,
+    blue: 120
   };
-  for(var key in newNicks) {
-    if (playerNames[key]) {
-      stage.removeChild(playerNames[key].sprite);
-    }
-    var thisPlayer = newNicks[key] ? newNicks[key] : 'Unkown';
-    var member = new PIXI.Text(thisPlayer, {
-      fill: players[key].team == 'a' ? '#FF0000' : '#0000FF',
-      font: 'bold 15pt Arial'
-    });
 
-    var X = players[key].team == 'a' ? 10 : 1300;
-    var Y = players[key].team == 'a' ? posY.red += 50 : posY.blue += 50;
+  var color = yourTeam === 'a' ? 'red' : 'blue';
+  var name = player.nick.text;
+  allTeamText.push(addText(name, color, posY));
 
-    setPos(member, X, Y);
-
-    playerNames[key] = {
-      sprite: member
-    };
+  for (var key in players) {
+    var p = players[key];
+    color = p.team === 'a' ? 'red' : 'blue';
+    name = p.nick.text;
+    allTeamText.push(addText(name, color, posY));
   }
 }
 
-function setPos(member, x, y) {
-  member.position.x = x;
-  member.position.y = y;
+function addText(name, color, posY) {
+  var member = new PIXI.Text(name, {
+    fill: color === 'red' ? '#FF0000' : '#0000FF',
+    font: 'bold 15pt Arial'
+  });
+
+  member.position.x = color === 'red' ? 20 : 1380 - member.width;
+  member.position.y = posY[color];
 
   stage.addChild(member);
+  posY[color] += 20;
+  return member;
 }
 
 function setScores(red, blue) {
@@ -200,12 +205,12 @@ function setScores(red, blue) {
 
   redScore.position.x = 75;
   redScore.position.y = 0;
-  blueScore.position.x = 1300;
+  blueScore.position.x = 1329 - blueScore.width;
   blueScore.position.y = 0;
 
   stage.addChild(redScore);
   stage.addChild(blueScore);
-};
+}
 
 function createPlayer(team) {
   team = team || 'a';
@@ -256,7 +261,7 @@ function createSkull(location, x, y) {
   skull.width = 50;
   skull.height = 50;
   return skull;
-};
+}
 
 function createFlag(location, x, y) {
   var flagTexture = new PIXI.Texture.fromImage(location);
@@ -418,6 +423,8 @@ function collidesBullet(bullet, object) {
 }
 
 function networkUpdate() {
+  var refreshNickFlag = false;
+
   for (var key in players) {
     var player = players[key];
 
@@ -425,6 +432,7 @@ function networkUpdate() {
       if (player.sprite)
         map.removeChild(player.sprite);
       delete players[key];
+      refreshNickFlag = true;
       continue;
     }
 
@@ -443,6 +451,7 @@ function networkUpdate() {
 
     if (newNicks[key]) {
       setNick(newNicks[key], player);
+      refreshNickFlag = true;
       delete newNicks[key];
     }
 
@@ -463,6 +472,8 @@ function networkUpdate() {
       player.dude.stop();
     }
   }
+
+  if (refreshNickFlag) drawTeams();
 }
 
 function playerMovement(inputs) {
@@ -672,6 +683,7 @@ function setStartCoords(team, isNew) {
     var nick = names[Math.floor(Math.random() * names.length)];
     socket.emit('chat', { msg: '/setNick ' + nick });
     setNick(nick, player);
+    drawTeams();
   }
 }
 
@@ -744,7 +756,6 @@ function startIO() {
 
   socket.on('new', function (data) {
     players[data.id] = data;
-    drawTeams();
   });
 
   socket.on('got', function (data) {
@@ -784,8 +795,6 @@ function startIO() {
 
   socket.on('dis', function (data) {
     players[data.id].deleted = true;
-    newNicks[data.id] = null;
-    drawTeams();
   });
 
   socket.on('pos', function (data) {
@@ -831,7 +840,6 @@ function startIO() {
   socket.on('msg', function (data) {
     if (data.nick) {
       newNicks[data.id] = data.nick;
-      drawTeams();
       return;
     }
 
@@ -912,6 +920,7 @@ $chatBox.on('keydown', function (e) {
       socket.emit('chat', { msg: msg });
       if (msg.indexOf('/setNick ') === 0) {
         setNick(msg.replace('/setNick ', ''), player);
+        drawTeams();
       }
     }
     $chatBox.blur();
