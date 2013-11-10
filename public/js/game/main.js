@@ -513,7 +513,7 @@ function startIO() {
 
     gameInProgress = data.go;
     if (!gameInProgress) {
-      $('#countdown').text('WAITING FOR PLAYERS');
+      $('#countdown').text('WAITING FOR PLAYERS TO JOIN');
       intro.play().fade(0, 1);
     } else {
       gameMusic.play();
@@ -581,7 +581,7 @@ function startIO() {
     intro.play();
     gameInProgress = false;
     setStartCoords(yourTeam);
-    $('#countdown').text('WAITING FOR PLAYERS');
+    $('#countdown').text('WAITING FOR PLAYERS TO JOIN');
     if (t) clearInterval(t);
     $('#timer').text('');
   });

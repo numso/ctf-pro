@@ -39,4 +39,6 @@ h1 {
 }
 #muteButton {
   float: right;
+  margin-right: 10px;
+  margin-top: 10px;
 }
