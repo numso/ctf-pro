@@ -9,7 +9,7 @@ var BULLETSPEED = 3;
 var NUM_MESSAGES = 10;
 var newNicks = {};
 
-var assets = ['resources/player.json', 'resources/player2.json', 'img/bottom.png', 'img/middle.png', '/img/redFlag.png', '/img/blueFlag.png', '/img/blueFlagIcon.png', '/img/redFlagIcon.png', '/img/skull.png'];
+var assets = ['resources/player.json', 'resources/player2.json', 'img/bottom.png', 'img/middle.png', '/img/redFlag.png', '/img/blueFlag.png', '/img/blueFlagIcon.png', '/img/redFlagIcon.png', '/img/blueSkull.png', '/img/redSkull.png'];
 var loader = new PIXI.AssetLoader(assets);
 loader.onComplete = function () {
   loadGame();
@@ -110,8 +110,8 @@ function loadGame() {
   map.addChild(redFlag);
   map.addChild(blueFlag);
 
-  blueKillsIcon = createSkull('/img/skull.png', 10, 60);
-  redKillsIcon = createSkull('/img/skull.png', 1340, 60);
+  redKillsIcon = createSkull('/img/redSkull.png', 10, 60);
+  blueKillsIcon = createSkull('/img/blueSkull.png', 1340, 60);
   setKills(0, 0);
 
   stage.addChild(blueKillsIcon);
