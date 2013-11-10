@@ -405,19 +405,20 @@ function move(x, y) {
 
   var enemyFlag = yourTeam == 'a' ? blueFlag : redFlag;
   var yourFlag = yourTeam == 'a' ? redFlag : blueFlag;
-  if (collideFlag(map.position.x, map.position.y, enemyFlag)) {
+  var coords = yourTeam == 'a' ? flagCoords.redFlag : flagCoords.blueFlag;
+
+  if (collideFlag(map.position.x, map.position.y, enemyFlag.position.x, enemyFlag.position.y)) {
     if (enemyFlag.visible) {
       player.gotFlag.visible = true;
       enemyFlag.visible = false;
       socket.emit('got');
     }
   }
-  if (collideFlag(map.position.x, map.position.y, yourFlag) && player.gotFlag.visible) {
+  if (collideFlag(map.position.x, map.position.y, coords.x, coords.y) && player.gotFlag.visible) {
     player.gotFlag.visible = false;
     enemyFlag.visible = true;
     socket.emit('point');
-  } else if (collideFlag(map.position.x, map.position.y, yourFlag)) {
-    var coords = yourTeam == 'a' ? flagCoords.redFlag : flagCoords.blueFlag;
+  } else if (collideFlag(map.position.x, map.position.y, yourFlag.position.x, yourFlag.position.y)) {
     yourFlag.position.x = coords.x;
     yourFlag.position.y = coords.y;
     socket.emit('return');
@@ -425,11 +426,11 @@ function move(x, y) {
   return true;
 }
 
-function collideFlag(posX, posY, enemyFlag) {
+function collideFlag(posX, posY, flagX, flagY) {
   posX = player.sprite.position.x - posX;
   posY = player.sprite.position.y - posY;
-  if (posX + player.sprite._width > enemyFlag.position.x && posX < enemyFlag.position.x + 20)
-    if (posY + player.sprite._height > enemyFlag.position.y && posY < enemyFlag.position.y + 20)
+  if (posX + player.sprite._width > flagX && posX < flagX + 20)
+    if (posY + player.sprite._height > flagY && posY < flagY + 20)
       return true;
   return false;
 }
@@ -574,6 +575,7 @@ function startIO() {
     var coords = players[data.id].team == 'a' ? flagCoords.redFlag : flagCoords.blueFlag;
     flag.position.x = coords.x;
     flag.position.y = coords.y;
+    players[data.id].gotFlag.visible = false;
   });
 
   socket.on('point', function (data) {
