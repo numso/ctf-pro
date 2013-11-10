@@ -287,6 +287,11 @@ function connect(socket) {
     ++teams[team].deaths;
     ++game.deaths;
 
+    mainIO.sockets.emit('kills', {
+      a: game.teams.a.kills,
+      b: game.teams.b.kills
+    });
+
     mainIO.sockets.emit('chat', {
       id: -1,
       name: 'Admin',
