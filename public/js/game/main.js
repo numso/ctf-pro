@@ -610,7 +610,7 @@ function move(x, y) {
     }
   }
   if (collideFlag(map.position.x, map.position.y, yourCoords.x, yourCoords.y) && player.gotFlag.visible) {
-    if (enemyFlag.visible && enemyFlag.position.x == enemyCoords.position.x && enemyFlag.position.y == enemyCoords.position.y) {
+    if (yourFlag.visible && yourFlag.position.x == yourCoords.position.x && yourFlag.position.y == yourCoords.position.y) {
       player.gotFlag.visible = false;
       enemyFlag.position.x = enemyCoords.x;
       enemyFlag.position.y = enemyCoords.y;
