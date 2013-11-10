@@ -84,3 +84,12 @@ button {
   width: 400px;
   display: none;
 }
+#gameOver {
+  position: absolute;
+  text-align: center;
+  color: #fff;
+  font-size: 30px;
+  top: 10%;
+  display: none;
+  width: 100%;
+}

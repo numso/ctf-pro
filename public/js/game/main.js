@@ -71,6 +71,8 @@ var $chatButton = $('#chatButton');
 $chatButton.click(hideChat);
 var $allChats = $('#allChats');
 
+var $banner = $('#gameOver');
+
 function hideChat() {
   chatHidden = !chatHidden;
   if (chatHidden) {
@@ -808,13 +810,18 @@ function startIO() {
   });
 
   socket.on('go', function () {
+    $banner.hide();
     setAlertText('GO!!', 1000);
     gameInProgress = true;
     intro.stop();
     gameMusic.play();
   });
 
-  socket.on('stop', function () {
+  socket.on('stop', function (data) {
+    console.log('game over:', data);
+    var winner = data.teams.a.points > data.teams.b.points ? "Red" : "Blue";
+    $banner.text(winner + ' Team Wins!');
+    $banner.show();
     gameMusic.stop();
     intro.play();
     setKills(0, 0);
