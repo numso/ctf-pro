@@ -375,11 +375,13 @@ function connect(socket) {
       msg.msg = oldNick + ' is now known as ' + newNick;
       msg.nick = newNick;
 
-      socket.broadcast.emit('msg', {
-        id: -1,
-        name: 'Admin',
-        msg: 'Welcome to ' + newNick
-      });
+      if(!user.username){
+        socket.broadcast.emit('msg', {
+          id: -1,
+          name: 'Admin',
+          msg: 'Welcome to ' + newNick
+        });
+      }
 
       user.nickname = newNick;
       return socket.broadcast.emit('msg', msg);
