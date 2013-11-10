@@ -3,6 +3,9 @@
   margin: 0;
   font-family: TrebuchetMS, Helvetica, sans-serif;
 }
+body {
+  background-color: #add8e6;
+}
 canvas {
   width: 100%;
   height: auto;
@@ -26,7 +29,7 @@ canvas {
   bottom: 0;
   right: 0;
 }
-#alerts {
+.mid-screen {
   font-size: 36px;
   font-weight: bold;
   text-align: center;
@@ -34,11 +37,11 @@ canvas {
   color: #fff;
   z-index: 1;
 }
-#alerts.a {
+.mid-screen.a {
   background-color: rgba(0,0,0,0.5);
   padding: 20px;
 }
-#alerts.b {
+.mid-screen.b {
   background-color: rgba(0,0,0,0.5);
   padding: 20px;
 }
@@ -46,9 +49,10 @@ canvas {
   text-align: center;
   margin-top: 15px;
   font-size: 36px;
-  background-color: #fff;
+  background-color: rgba(255,255,255,0.5);
   display: inline-block;
   padding: 20px;
+  min-width: 100px;
 }
 h1 {
   float: left;
@@ -91,12 +95,11 @@ button {
   width: 400px;
   display: none;
 }
+#gameOverContainer {
+  height: 200px;
+}
 #gameOver {
-  position: absolute;
-  text-align: center;
-  color: #fff;
-  font-size: 30px;
-  top: 10%;
+  background-color: rgba(0,0,0,0.5);
+  padding: 20px;
   display: none;
-  width: 100%;
 }
