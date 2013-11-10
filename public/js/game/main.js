@@ -353,8 +353,8 @@ function playerHasFlag(player) {
   spr.beginFill(0x000000);
   spr.drawCircle(0, 0, 100);
   spr.endFill();
-  spr.position.x = player.x;
-  spr.position.y = player.y;
+  spr.position.x = player.position.x;
+  spr.position.y = player.position.y;
   stage.addChild(spr);
 }
 
