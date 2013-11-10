@@ -153,27 +153,36 @@ function setKills(red, blue) {
 
 function drawTeams() {
   var teams = [];
-  var posY = 150;
+  var posY = {
+    red: 100,
+    blue: 100
+  };
   for(var key in newNicks) {
     if (playerNames[key]) {
       stage.removeChild(playerNames[key].sprite);
     }
-    var thisPlayer = newNicks[key];
-    thisPlayer.nick = thisPlayer.nick ? thisPlayer.nick : 'Unkown';
-    console.log(thisPlayer);
+    var thisPlayer = newNicks[key] ? newNicks[key] : 'Unkown';
     var member = new PIXI.Text(thisPlayer, {
       fill: players[key].team == 'a' ? '#FF0000' : '#0000FF',
       font: 'bold 15pt Arial'
     });
-    member.position.x = players[key].team == 'a' ? 10 : 1300;
-    member.position.y = posY;
 
-    posY += 50;
+    var X = players[key].team == 'a' ? 10 : 1300;
+    var Y = players[key].team == 'a' ? posY.red += 50 : posY.blue += 50;
+
+    setPos(member, X, Y);
+
     playerNames[key] = {
       sprite: member
     };
-    stage.addChild(member);
   }
+}
+
+function setPos(member, x, y) {
+  member.position.x = x;
+  member.position.y = y;
+
+  stage.addChild(member);
 }
 
 function setScores(red, blue) {
@@ -759,6 +768,8 @@ function startIO() {
 
   socket.on('dis', function (data) {
     players[data.id].deleted = true;
+    newNicks[data.id] = null;
+    drawTeams();
   });
 
   socket.on('pos', function (data) {
@@ -780,6 +791,8 @@ function startIO() {
   socket.on('stop', function () {
     gameMusic.stop();
     intro.play();
+    setKills(0, 0);
+    setScores(0, 0);
     gameInProgress = false;
     setStartCoords(yourTeam);
     setAlertText('WAITING FOR PLAYERS TO JOIN');
