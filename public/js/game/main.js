@@ -89,6 +89,15 @@ function createPlayer(team) {
   player._width = 20;
   player._height = 20;
 
+  var gotFlagBubble = new PIXI.Graphics();
+  gotFlagBubble.beginFill(team === 'a' ? '0x0000FF' : '0xFF0000', 0.4);
+  gotFlagBubble.drawCircle(0, 0, 50);
+  gotFlagBubble.position.x = 3;
+  gotFlagBubble.position.y = -1;
+  gotFlagBubble.endFill();
+  gotFlagBubble.visible = false;
+  player.addChild(gotFlagBubble);
+
   var playerSprite = new PIXI.MovieClip(playerList);
   playerSprite.pivot.x = 10;
   playerSprite.pivot.y = 10;
@@ -103,7 +112,8 @@ function createPlayer(team) {
   return {
     sprite: player,
     dude: playerSprite,
-    nick: nickName
+    nick: nickName,
+    gotFlag: gotFlagBubble
   };
 }
 
@@ -348,16 +358,6 @@ function createBullet(data) {
   };
 }
 
-function playerHasFlag(player) {
-  var spr = new PIXI.Graphics();
-  spr.beginFill(0x000000);
-  spr.drawCircle(0, 0, 100);
-  spr.endFill();
-  spr.position.x = player.position.x;
-  spr.position.y = player.position.y;
-  stage.addChild(spr);
-}
-
 function move(x, y) {
   if (detectCollision(map.position.x + (x * SPEED), map.position.y + (y * SPEED))) {
    return false;
@@ -367,9 +367,8 @@ function move(x, y) {
   map.position.y += y * SPEED;
 
   if (gotFlag(map.position.x, map.position.y)) {
-    player.sprite.hasFlag = true;
+    player.gotFlag.visible = true;
     socket.emit('got');
-    playerHasFlag(player.sprite);
   }
   return true;
 }
