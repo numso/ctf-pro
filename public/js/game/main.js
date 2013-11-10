@@ -712,7 +712,8 @@ function startIO() {
       intro.play().fade(0, 1);
     } else {
       gameMusic.play();
-      $('#timer').text('Calculating Time Remaining...');
+      data.time = data.time || { min: 15 };
+      setTimer(data.time.min, data.time.sec);
     }
     yourTeam = data.team;
     setStartCoords(yourTeam, true);
@@ -883,9 +884,9 @@ function getCoords(id, x, y) {
 }
 
 var t;
-function setTimer(num) {
-  var mins = num;
-  var secs = 0;
+function setTimer(min, sec) {
+  var mins = min;
+  var secs = sec || 0;
   if (t) clearInterval(t);
   t = setInterval(function () {
     secs -= 1;
