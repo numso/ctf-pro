@@ -178,7 +178,7 @@ function connect(socket) {
   teams[team].users[id] = user;
   users[id] = user;
 
-  socket.emit('chat', {
+  socket.emit('msg', {
     id: -1,
     name: 'Admin',
     msg: 'Welcome to CTF Pro! Press "t" to chat!'
