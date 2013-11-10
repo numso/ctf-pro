@@ -8,7 +8,7 @@ var SPEED = 10;
 var BULLETSPEED = 3;
 var newNicks = {};
 
-var assets = ['resources/player.json', 'img/bottom.png', 'img/middle.png', '/img/redFlag.png', '/img/blueFlag.png'];
+var assets = ['resources/player.json', 'resources/player2.json', 'img/bottom.png', 'img/middle.png', '/img/redFlag.png', '/img/blueFlag.png'];
 var loader = new PIXI.AssetLoader(assets);
 loader.onComplete = function () {
   loadGame();
@@ -351,6 +351,16 @@ function createBullet(data) {
   };
 }
 
+function playerHasFlag(player) {
+  var spr = new PIXI.Graphics();
+  spr.beginFill(0x000000);
+  spr.drawCircle(0, 0, 100);
+  spr.endFill();
+  spr.position.x = player.x;
+  spr.position.y = player.y;
+  stage.addChild(spr);
+}
+
 function move(x, y) {
   if (detectCollision(map.position.x + (x * SPEED), map.position.y + (y * SPEED))) {
    return false;
@@ -362,6 +372,7 @@ function move(x, y) {
   if (gotFlag(map.position.x, map.position.y)) {
     player.sprite.hasFlag = true;
     socket.emit('got');
+    playerHasFlag(player.sprite);
   }
   return true;
 }
@@ -501,7 +512,15 @@ function startIO() {
 
   socket.on('got', function (data) {
     console.log(data);
-    var flag = data.team == 'a' ? blueFlag : redFlag
+    var flag = data.team == 'a' ? blueFlag : redFlag;
+    flag.visible = false;
+    players[data.id].hasFlag = true;
+    playerHasFlag(players[data.id]);
+    console.log(players[data.id].hasFlag);
+  });
+
+  socket.on('return', function (data) {
+
   });
 
   socket.on('dis', function (data) {
