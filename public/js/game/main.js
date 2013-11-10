@@ -1,4 +1,4 @@
-/* global PIXI, $, requestAnimationFrame, TESTMAP, io, console, _, Howl */
+/* global PIXI, $, requestAnimationFrame, TESTMAP, io, console, _, Howl, Howler */
 'use strict';
 
 window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || function (cb) { window.setTimeout(cb, 1000 / 60); };
@@ -33,11 +33,13 @@ var obstacles = [];
 
 var intro = new Howl({
     urls: ['/snd/intro.mp3'],
+    autoplay: false,
     loop: true
   });
 
 var gameMusic = new Howl({
   urls: ['/snd/gameMusic.mp3'],
+  autoplay: false,
   loop: true
 });
 
@@ -45,12 +47,10 @@ var muted = false;
 $('#muteButton').click(function () {
   muted = !muted;
   if (muted) {
-    intro.mute();
-    gameMusic.mute();
+    Howler.mute();
     $(this).text('Unmute');
   } else {
-    gameMusic.unmute();
-    intro.unmute();
+    Howler.unmute();
     $(this).text('Mute');
   }
 });
@@ -157,14 +157,13 @@ function loadMapTextures() {
 
 function animate() {
   renderer.render(stage);
-  requestAnimationFrame(animate);
   if (gameInProgress) {
     playerMovement(inputs);
-    if (gunCoolDown > 0)
-      gunCoolDown -= 1;
+    if (gunCoolDown > 0) --gunCoolDown;
     loopBullets();
   }
   networkUpdate();
+  requestAnimationFrame(animate);
 }
 
 function loopBullets() {
@@ -185,8 +184,8 @@ function loopBullets() {
 
     var pseudoPlayer = {
       position: {
-        x: 0,
-        y: 0,
+        x: player.sprite.position.x - map.position.x,
+        y: player.sprite.position.y - map.position.y,
         w: 20,
         h: 20
       }
@@ -194,7 +193,7 @@ function loopBullets() {
 
     if (!bulletDeath && bullet.id !== 'me' && collidesBullet(bullet.spr, pseudoPlayer)) {
       bulletDeath = true;
-      playerDeath = true;
+      playerDeath = bullet.id;
     }
 
     if (bulletDeath) {
@@ -204,8 +203,14 @@ function loopBullets() {
   }
 
   if (playerDeath) {
-    console.log('KILL THE PLAYER');
+    socket.emit('died', { id: playerDeath });
+    deathSequence(player);
   }
+}
+
+function deathSequence(aPlayer) {
+  if (aPlayer === player)
+    setStartCoords(yourTeam);
 }
 
 function collidesBullet(bullet, object) {
