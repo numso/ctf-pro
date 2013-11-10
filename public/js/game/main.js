@@ -8,7 +8,7 @@ var SPEED = 10;
 var BULLETSPEED = 3;
 var newNicks = {};
 
-var assets = ['resources/player.json', 'img/bottom.png', 'img/middle.png'];
+var assets = ['resources/player.json', 'resources/player2.json', 'img/bottom.png', 'img/middle.png'];
 var loader = new PIXI.AssetLoader(assets);
 loader.onComplete = function () {
   loadGame();
@@ -79,10 +79,13 @@ function loadGame() {
   requestAnimationFrame(animate);
 }
 
-function createPlayer() {
+function createPlayer(team) {
+  team = team || 'a';
+
   var playerList = [];
+  console.log(PIXI.TextureCache);
   for (var i = 0; i < 3; ++i) {
-    playerList.push(new PIXI.Texture.fromFrame(i));
+    playerList.push(new PIXI.Texture.fromFrame(team + i));
   }
   var player = new PIXI.DisplayObjectContainer();
   player.position.x = 700;
