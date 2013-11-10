@@ -291,7 +291,7 @@ function connect(socket) {
     mainIO.sockets.emit('chat', {
       id: -1,
       name: 'Admin',
-      msg: (users[data.id].nickname || users[data.id].id) + ' killed ' + (user.name || user.id);
+      msg: (users[data.id].nickname || users[data.id].id) + ' killed ' + (user.name || user.id)
     });
   });
 
