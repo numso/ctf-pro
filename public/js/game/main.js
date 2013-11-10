@@ -864,7 +864,13 @@ function startIO() {
     var coords = players[data.id].team == 'a' ? flagCoords.redFlag : flagCoords.blueFlag;
     flag.position.x = coords.x;
     flag.position.y = coords.y;
-    players[data.id].gotFlag.visible = false;
+
+    var enemyTeam = players[data.id].team == 'a' ? 'b' : 'a';
+    for (var key in players) {
+      var p = players[key];
+      if (p.team == enemyTeam)
+        p.gotFlag.visible = false;
+    }
   });
 
   socket.on('point', function (data) {
