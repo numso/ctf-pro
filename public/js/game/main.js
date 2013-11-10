@@ -585,8 +585,8 @@ function move(x, y) {
 function collideFlag(posX, posY, flagX, flagY) {
   posX = player.sprite.position.x - posX;
   posY = player.sprite.position.y - posY;
-  if (posX + player.sprite._width > flagX && posX < flagX + 20)
-    if (posY + player.sprite._height > flagY && posY < flagY + 20)
+  if (posX + player.sprite._width > flagX -75 && posX < flagX + 50)
+    if (posY + player.sprite._height > flagY -75 && posY < flagY + 50)
       return true;
   return false;
 }
