@@ -739,9 +739,15 @@ window.addEventListener('keydown', function (e) {
   }
 });
 
-var ctrlAreHidden = false;
+var ctrlAreHidden = true;
 var $controls = $('#controls');
 var $controlsBtn = $('#controlsBtn');
+
+
+$controlsBtn.click(function () {
+  toggleControls();
+});
+
 function toggleControls() {
   ctrlAreHidden = !ctrlAreHidden;
   if (ctrlAreHidden) {
