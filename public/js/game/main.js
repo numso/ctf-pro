@@ -696,6 +696,19 @@ function setNick(nick, aPlayer) {
   aPlayer.sprite.addChild(aPlayer.nick);
 }
 
+function resetFlags() {
+  redFlag.position.x = flagCoords.redFlag.x;
+  redFlag.position.y = flagCoords.redFlag.y;
+  blueFlag.position.x = flagCoords.blueFlag.x;
+  blueFlag.position.y = flagCoords.blueFlag.y;
+
+  player.gotFlag.visible = false;
+  for (var key in players) {
+    var p = players[key];
+    p.gotFlag.visible = false;
+  }
+}
+
 function startIO() {
   socket = io.connect();
   socket.on('conn', function (data) {
@@ -827,6 +840,7 @@ function startIO() {
     intro.play();
     setKills(0, 0);
     setScores(0, 0);
+    resetFlags();
     gameInProgress = false;
     setStartCoords(yourTeam);
     setAlertText('WAITING FOR PLAYERS TO JOIN');
