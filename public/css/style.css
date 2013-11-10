@@ -29,8 +29,11 @@ canvas {
   color: #fff;
   z-index: 1;
 }
-#alerts .a,
-#alerts .b {
+#alerts.a {
+  background-color: rgba(0,0,0,0.5);
+  padding: 20px;
+}
+#alerts.b {
   background-color: rgba(0,0,0,0.5);
   padding: 20px;
 }
