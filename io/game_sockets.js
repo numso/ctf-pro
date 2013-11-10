@@ -178,6 +178,12 @@ function connect(socket) {
   teams[team].users[id] = user;
   users[id] = user;
 
+  socket.emit('chat', {
+    id: -1,
+    name: 'Admin',
+    msg: 'Welcome to CFG Pro! Press "t" to chat!'
+  });
+
   socket.broadcast.emit('new', {
     id: user.id,
     team: team
@@ -286,6 +292,11 @@ function connect(socket) {
     ++user.deaths;
     ++teams[team].deaths;
     ++game.deaths;
+
+    mainIO.sockets.emit('kills', {
+      a: game.teams.a.kills,
+      b: game.teams.b.kills
+    });
 
     mainIO.sockets.emit('chat', {
       id: -1,
