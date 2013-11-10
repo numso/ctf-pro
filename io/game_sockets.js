@@ -385,11 +385,17 @@ function connect(socket) {
       msg.msg = oldNick + ' is now known as ' + newNick;
       msg.nick = newNick;
 
-      if(!user.nickname){
+      if (!user.nickname){
         socket.broadcast.emit('msg', {
           id: -1,
           name: 'Admin',
           msg: 'Welcome to ' + newNick
+        });
+      } else {
+        socket.broadcast.emit('msg', {
+          id: -1,
+          name: 'Admin',
+          msg: msg.msg
         });
       }
 
