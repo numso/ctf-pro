@@ -8,7 +8,7 @@ var SPEED = 10;
 var BULLETSPEED = 3;
 var newNicks = {};
 
-var assets = ['resources/player.json', 'resources/player2.json', 'img/bottom.png', 'img/middle.png'];
+var assets = ['resources/player.json', 'img/bottom.png', 'img/middle.png', '/img/redFlag.png', '/img/blueFlag.png'];
 var loader = new PIXI.AssetLoader(assets);
 loader.onComplete = function () {
   loadGame();
@@ -66,8 +66,8 @@ function loadGame() {
   map = createMap();
   stage.addChild(map);
 
-  redFlag = createFlag('/img/redFlag.png', 50, 1100);
-  blueFlag = createFlag('/img/blueFlag.png', 7885, 860);
+  redFlag = createFlag('/img/redFlag.png', 100, 1140);
+  blueFlag = createFlag('/img/blueFlag.png', 7935, 890);
   map.addChild(redFlag);
   map.addChild(blueFlag);
 
@@ -110,10 +110,10 @@ function createPlayer(team) {
 function createFlag(location, x, y) {
   var flagTexture = new PIXI.Texture.fromImage(location);
   var flag = new PIXI.Sprite(flagTexture);
-
   flag.position.x = x;
   flag.position.y = y;
-
+  flag.pivot.x = 50;
+  flag.pivot.y = 40;
   return flag;
 }
 
@@ -352,9 +352,30 @@ function move(x, y) {
   if (detectCollision(map.position.x + (x * SPEED), map.position.y + (y * SPEED))) {
    return false;
   }
+
   map.position.x += x * SPEED;
   map.position.y += y * SPEED;
+
+  if (gotFlag(map.position.x, map.position.y)) {
+    player.sprite.hasFlag = true;
+    socket.emit('got');
+  }
   return true;
+}
+
+function gotFlag(posX, posY) {
+  var enemyFlag = yourTeam == 'a' ? blueFlag : redFlag;
+  posX = player.sprite.position.x - posX;
+  posY = player.sprite.position.y - posY;
+  if (posX + player.sprite._width > enemyFlag.position.x && posX < enemyFlag.position.x + 10)
+    if (posY + player.sprite._height > enemyFlag.position.y && posY < enemyFlag.position.y + 10) {
+      if (enemyFlag.visible) {
+        enemyFlag.visible = false;
+        return true;
+      }
+      return false;
+    }
+  return false;
 }
 
 function detectCollision(x, y) {
@@ -460,7 +481,7 @@ function startIO() {
     } else {
       gameMusic.play();
     }
-    var yourTeam = data.team;
+    yourTeam = data.team;
     setStartCoords(yourTeam, true);
 
     for (var key in data.teams.a.users) {
@@ -475,6 +496,11 @@ function startIO() {
 
   socket.on('new', function (data) {
     players[data.id] = data;
+  });
+
+  socket.on('got', function (data) {
+    console.log(data);
+    var flag = data.team == 'a' ? blueFlag : redFlag;
   });
 
   socket.on('dis', function (data) {
