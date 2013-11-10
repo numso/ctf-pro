@@ -7,6 +7,10 @@ canvas {
   width: 100%;
   height: auto;
 }
+#header {
+  position: relative;
+  z-index: 1;
+}
 #footer {
   background-color: #add8e6;
   position: absolute;
