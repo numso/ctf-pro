@@ -272,7 +272,7 @@ function deathSequence(aPlayer) {
     if (aPlayer.gotFlag.visible) {
       var flag = yourTeam == 'a' ? blueFlag : redFlag;
       flag.position.x = aPlayer.sprite.position.x - map.position.x;
-      flag.position.y = aPlayer.sprite.position.y - map.position.y; 
+      flag.position.y = aPlayer.sprite.position.y - map.position.y;
       flag.visible = true;
 
       player.gotFlag.visible = false;
@@ -651,9 +651,7 @@ function startIO() {
   });
 
   socket.on('alert', function (data) {
-    console.log('alert');
-    console.log(data);
-    setAlertText(data.msg, 1000, data.team);
+    setAlertText(data.msg, 1500, data.team);
   });
 }
 
@@ -694,7 +692,7 @@ function setAlertText(text, timeout, team) {
   if (alertsTimeout) clearTimeout(alertsTimeout);
   $alerts.removeClass('a');
   $alerts.removeClass('b');
-  if (team) $alerts.removeClass(team);
+  if (team) $alerts.addClass(team);
   $alerts.text(text);
   if (timeout) {
     alertsTimeout = setTimeout(function () {
