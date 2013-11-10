@@ -1,4 +1,4 @@
-/* global PIXI, $, requestAnimationFrame, TESTMAP, io, console, _, Howl, Howler */
+/* global PIXI, $, requestAnimationFrame, TESTMAP, io, _, Howl, Howler */
 'use strict';
 
 window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || function (cb) { window.setTimeout(cb, 1000 / 60); };
@@ -35,8 +35,6 @@ var redIcon, blueIcon;
 var blueScore, redScore;
 var blueKillsIcon, redKillsIcon;
 var redKills, blueKills;
-var kills;
-var playerNames = {};
 var inputs = [];
 var obstacles = [];
 var flagCoords = {
@@ -457,7 +455,6 @@ function networkUpdate() {
       delete newNicks[key];
     }
 
-
     if (player.sprite.position.x !== player.x || player.sprite.position.y !== player.y) {
       var deltaX = player.x - player.sprite.position.x;
       var deltaY = player.y - player.sprite.position.y;
@@ -731,7 +728,6 @@ function startIO() {
 
     if (data.teams.a.flag) {
       if (data.teams.a.flag.id) {
-        console.log(data.teams.a.flag.id);
         players[data.teams.a.flag.id].iHazDaFlag = true;
         blueFlag.visible = false;
       } else {
@@ -743,7 +739,6 @@ function startIO() {
 
     if (data.teams.b.flag) {
       if (data.teams.b.flag.id) {
-        console.log(data.teams.b.flag.id);
         players[data.teams.b.flag.id].iHazDaFlag = true;
         redFlag.visible = false;
       } else {
@@ -818,9 +813,14 @@ function startIO() {
   });
 
   socket.on('stop', function (data) {
-    console.log('game over:', data);
-    var winner = data.teams.a.points > data.teams.b.points ? "Red" : "Blue";
-    $banner.text(winner + ' Team Wins!');
+    var winner = data.teams.a.points > data.teams.b.points ? 'Red Team Wins!' : 'Blue Team Wins!';
+    if (data.teams.a.points === data.teams.b.points) {
+      winner = data.teams.a.kills > data.teams.b.kills ? 'Red Team Wins!' : 'Blue Team Wins!';
+      if (data.teams.a.kills === data.teams.b.kills) {
+        winner = 'Tie Game!';
+      }
+    }
+    $banner.text(winner);
     $banner.show();
     gameMusic.stop();
     intro.play();
@@ -865,7 +865,6 @@ function startIO() {
   });
 
   socket.on('alert', function (data) {
-    console.log(data);
     setAlertText(data.msg, 1500, data.team);
   });
 }
