@@ -99,10 +99,10 @@ function hideChat() {
   chatHidden = !chatHidden;
   if (chatHidden) {
     $allChats.hide();
-    $chatButton.text('Show Chat (c)');
+    $chatButton.text('Show Chat (h)');
   } else {
     $allChats.show();
-    $chatButton.text('Hide Chat (c)');
+    $chatButton.text('Hide Chat (h)');
   }
   $chatButton.blur();
 }
@@ -713,11 +713,20 @@ function toRadians(angle) {
 window.addEventListener('keydown', function (e) {
   inputs[e.keyCode] = true;
 
+  if (e.keyCode === 27) {
+    $chatBox.blur();
+    hideControls();
+  }
+
   if (e.keyCode === 77) {
     mute();
   }
 
   if (e.keyCode === 67) {
+    toggleControls();
+  }
+
+  if (e.keyCode === 72) {
     hideChat();
   }
 
@@ -729,6 +738,26 @@ window.addEventListener('keydown', function (e) {
     focusMsgBox('/');
   }
 });
+
+var ctrlAreHidden = false;
+var $controls = $('#controls');
+var $controlsBtn = $('#controlsBtn');
+function toggleControls() {
+  ctrlAreHidden = !ctrlAreHidden;
+  if (ctrlAreHidden) {
+    $controls.hide();
+    $controlsBtn.text('Show Controls (c)');
+  } else {
+    $controls.show();
+    $controlsBtn.text('Hide Controls (c)');
+  }
+}
+
+function hideControls() {
+  ctrlAreHidden = true;
+  $controls.hide();
+  $controlsBtn.text('Show Controls (c)');
+}
 
 window.addEventListener('keyup', function (e) {
   inputs[e.keyCode] = false;
@@ -1017,6 +1046,7 @@ var $chatBox = $('#chatBox');
 $chatBox.on('keydown', function (e) {
   if (e.keyCode === 27) {
     $chatBox.blur();
+    hideControls();
   } else if (e.keyCode === 13) {
     var msg = $chatBox.val();
     if (msg) {
