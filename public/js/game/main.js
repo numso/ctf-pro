@@ -757,6 +757,7 @@ function toggleControls() {
     $controls.show();
     $controlsBtn.text('Hide Controls (c)');
   }
+  $controlsBtn.blur();
 }
 
 function hideControls() {
