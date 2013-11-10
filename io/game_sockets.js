@@ -266,6 +266,12 @@ function connect(socket) {
     ++user.deaths;
     ++teams[team].deaths;
     ++game.deaths;
+
+    mainIO.sockets.emit('chat', {
+      id: -1,
+      name: 'Admin',
+      msg: (users[data.id].nickname || users[data.id].id) + ' killed ' + (user.name || user.id);
+    });
   });
 
   socket.on('got', function(){
@@ -308,6 +314,8 @@ function connect(socket) {
 
     var msg = {
       id: user.id,
+      name: user.nickname,
+      team: team,
       msg: data.msg
     };
 
