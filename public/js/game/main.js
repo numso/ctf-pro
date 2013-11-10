@@ -9,7 +9,7 @@ var BULLETSPEED = 3;
 var NUM_MESSAGES = 10;
 var newNicks = {};
 
-var assets = ['resources/player.json', 'resources/player2.json', 'img/bottom.png', 'img/middle.png', '/img/redFlag.png', '/img/blueFlag.png', '/img/blueFlagIcon.png', '/img/redFlagIcon.png', '/img/blueSkull.png', '/img/redSkull.png'];
+var assets = ['resources/player.json', 'resources/player2.json', 'img/bottom.png', 'img/middle.png', '/img/redFlag.png', '/img/blueFlag.png', '/img/blueFlagIcon.png', '/img/redFlagIcon.png', '/img/blueSkull.png', '/img/redSkull.png', '/img/source.jpg', '/img/sink.jpg'];
 var loader = new PIXI.AssetLoader(assets);
 loader.onComplete = function () {
   loadGame();
@@ -39,6 +39,30 @@ var kills;
 var playerNames = {};
 var inputs = [];
 var obstacles = [];
+var blueSideTele, redSideTele;
+
+var teleporterCoords = {
+  redSide: {
+    source: {
+      x: 300,
+      y: 1775
+    },
+    sink: {
+      x: 2800,
+      y: 1140
+    }
+  },
+  blueSide: {
+    source: {
+      x: 7735,
+      y: 280
+    },
+    sink: {
+      x: 5235,
+      y: 890
+    }
+  }
+}
 var flagCoords = {
   redFlag: {
     x: 100,
@@ -125,6 +149,9 @@ function loadGame() {
   blueIcon = createIcon('/img/blueFlagIcon.png', 1340, 10);
   setScores(0, 0);
 
+  redSideTele = createTeleport(teleporterCoords.redSide);
+  blueSideTele = createTeleport(teleporterCoords.blueSide);
+
   stage.addChild(redIcon);
   stage.addChild(blueIcon);
 
@@ -132,6 +159,7 @@ function loadGame() {
 
   requestAnimationFrame(animate);
 }
+
 
 function setKills(red, blue) {
   if (redKills) stage.removeChild(redKills);
@@ -212,6 +240,20 @@ function setScores(red, blue) {
 
   stage.addChild(redScore);
   stage.addChild(blueScore);
+}
+
+function createTeleport(coords) {
+  var source = new PIXI.Sprite(new PIXI.Texture.fromFrame('/img/source.jpg'));
+  var sink = new PIXI.Sprite(new PIXI.Texture.fromFrame('/img/sink.jpg'));
+
+  source.position.x = coords.source.x;
+  source.position.y = coords.source.y;
+
+  sink.position.x = coords.sink.x;
+  sink.position.y = coords.sink.y;
+
+  map.addChild(source);
+  map.addChild(sink);
 }
 
 function createPlayer(team) {
@@ -581,7 +623,37 @@ function move(x, y) {
     yourFlag.position.y = yourCoords.y;
     socket.emit('return');
   }
+
+  var teleport = collideTele(player.sprite.position.x - map.position.x, player.sprite.position.y - map.position.y, player);
+  if (teleport.go) {
+    console.log('hit tele!!');
+    var destination = teleport.dest == 'red' ? teleporterCoords.redSide.sink : teleporterCoords.blueSide.sink;
+    console.log(map.position.x, destination.x, player.sprite.position.x);
+    map.position.x = player.sprite.position.x - destination.x;
+    map.position.y = player.sprite.position.y - destination.y;
+  }
   return true;
+}
+
+function collideTele(posX, posY, player) {
+  var blue = teleporterCoords.blueSide.source;
+  var red = teleporterCoords.redSide.source;
+
+  if (posX + player.sprite._width > red.x - 50 && posX < red.x + 50)
+    if (posY + player.sprite._height > red.y - 50 && posY < red.y + 50)
+      return {
+        go: true,
+        dest: 'red'
+      };
+
+  if (posX + player.sprite._width > blue.x - 50 && posX < blue.x + 50)
+    if (posY + player.sprite._height > blue.y - 50 && posY < blue.y + 50)
+      return {
+        go: true,
+        dest: 'blue'
+      };
+
+  return {go: false};
 }
 
 function collideFlag(posX, posY, flagX, flagY) {
@@ -818,7 +890,6 @@ function startIO() {
   });
 
   socket.on('stop', function (data) {
-    console.log('game over:', data);
     var winner = data.teams.a.points > data.teams.b.points ? "Red" : "Blue";
     $banner.text(winner + ' Team Wins!');
     $banner.show();
@@ -865,7 +936,6 @@ function startIO() {
   });
 
   socket.on('alert', function (data) {
-    console.log(data);
     setAlertText(data.msg, 1500, data.team);
   });
 }
