@@ -163,15 +163,17 @@ function connect(socket) {
     teams: {
       a: {
         points: teams.a.points,
-        users: teams.a.users
+        kills: teams.a.kills,
+        users: teams.a.users,
+        flag: flags.a
       },
       b: {
         points: teams.b.points,
-        users: teams.b.users
+        kills: teams.b.kills,
+        users: teams.b.users,
+        flag: flags.b
       }
-    },
-    aflag: flags.a,
-    bflag: flags.b
+    }
   });
 
 
