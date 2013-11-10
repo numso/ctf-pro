@@ -72,7 +72,7 @@ function gameleft(togo){ //togo is minutes
     stopGame();
 
     game.countdown = true;
-    countdown(15);
+    countdown(5);
   } else {
     mainIO.sockets.emit('togo', {
       min: togo
@@ -151,7 +151,7 @@ function connect(socket) {
 
   if(++game.active >= 2 && !game.countdown && !game.started){
     game.countdown = true;
-    countdown(10);
+    countdown(5);
   }
 
   socket.emit('conn', {
@@ -200,8 +200,8 @@ function connect(socket) {
   });
 
   socket.on('move', function(data){
-    if(!data.x) return;
-    if(!data.y) return;
+    if(data.x === undefined) return;
+    if(data.y === undefined) return;
 
     user.x = data.x;
     user.y = data.y;
@@ -224,18 +224,21 @@ function connect(socket) {
       b: teams.b.points
     };
 
-    if(teams[team].points === 3){
-      stopGame();
-    }
 
     socket.emit('point', result);
     socket.broadcast.emit('point', result);
+
+    if (teams[team].points === 3){
+      stopGame();
+      game.countdown = true;
+      countdown(5);
+    }
   });
 
   socket.on('shot', function(data){
-    if(!data.x) return;
-    if(!data.y) return;
-    if(!data.d) return;
+    if(data.x === undefined) return;
+    if(data.y === undefined) return;
+    if(data.d === undefined) return;
     data.id = user.id;
 
     ++user.shots;
@@ -279,8 +282,8 @@ function connect(socket) {
   });
 
   socket.on('drop', function(data){
-    if(!data.x) return;
-    if(!data.y) return;
+    if(data.x === undefined) return;
+    if(data.y === undefined) return;
 
     socket.broadcast.emit('drop', {
       id: user.id,

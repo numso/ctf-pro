@@ -8,13 +8,12 @@ var SPEED = 10;
 var BULLETSPEED = 3;
 var newNicks = {};
 
-var assets = ['resources/player.json', 'img/bottom.png', 'img/middle.png', '/img/redFlag.png', '/img/blueFlag.png'];
+var assets = ['resources/player.json', 'resources/player2.json', 'img/bottom.png', 'img/middle.png', '/img/redFlag.png', '/img/blueFlag.png'];
 var loader = new PIXI.AssetLoader(assets);
 loader.onComplete = function () {
   loadGame();
 };
 loader.load();
-
 
 var players = {};
 var socket;
@@ -31,6 +30,16 @@ var player;
 var redFlag, blueFlag;
 var inputs = [];
 var obstacles = [];
+var flagCoords = {
+  redFlag: {
+    x: 100,
+    y: 1140
+  },
+  blueFlag: {
+    x: 7935,
+    y: 890
+  }
+};
 
 
 var intro = new Howl({
@@ -47,30 +56,31 @@ var gameMusic = new Howl({
 
 var muted = false;
 $('#muteButton').click(function () {
+  var $this = $(this);
   muted = !muted;
   if (muted) {
     Howler.mute();
-    $(this).text('Unmute');
+    $this.text('Unmute');
   } else {
     Howler.unmute();
-    $(this).text('Mute');
+    $this.text('Mute');
   }
+  $this.blur();
 });
 
 function loadGame() {
   renderer = new PIXI.autoDetectRenderer(1400, 600);
   $('#view').after(renderer.view);
+  $(renderer.view).addClass('center');
+
   stage = new PIXI.Stage();
 
   loadMapTextures();
   map = createMap();
   stage.addChild(map);
 
-  player = createPlayer();
-  stage.addChild(player.sprite);
-
-  redFlag = createFlag('/img/redFlag.png', 100, 1140);
-  blueFlag = createFlag('/img/blueFlag.png', 7935, 890);
+  redFlag = createFlag('/img/redFlag.png', flagCoords.redFlag.x, flagCoords.redFlag.y);
+  blueFlag = createFlag('/img/blueFlag.png', flagCoords.blueFlag.x, flagCoords.blueFlag.y);
   map.addChild(redFlag);
   map.addChild(blueFlag);
 
@@ -83,7 +93,6 @@ function createPlayer(team) {
   team = team || 'a';
 
   var playerList = [];
-  console.log(PIXI.TextureCache);
   for (var i = 0; i < 3; ++i) {
     playerList.push(new PIXI.Texture.fromFrame(team + i));
   }
@@ -92,6 +101,15 @@ function createPlayer(team) {
   player.position.y = 300;
   player._width = 20;
   player._height = 20;
+
+  var gotFlagBubble = new PIXI.Graphics();
+  gotFlagBubble.beginFill(team === 'a' ? '0x0000FF' : '0xFF0000', 0.4);
+  gotFlagBubble.drawCircle(0, 0, 50);
+  gotFlagBubble.position.x = 3;
+  gotFlagBubble.position.y = -1;
+  gotFlagBubble.endFill();
+  gotFlagBubble.visible = false;
+  player.addChild(gotFlagBubble);
 
   var playerSprite = new PIXI.MovieClip(playerList);
   playerSprite.pivot.x = 10;
@@ -107,7 +125,8 @@ function createPlayer(team) {
   return {
     sprite: player,
     dude: playerSprite,
-    nick: nickName
+    nick: nickName,
+    gotFlag: gotFlagBubble
   };
 }
 
@@ -232,6 +251,18 @@ function loopBullets() {
 
 function deathSequence(aPlayer) {
   if (aPlayer === player) {
+    if (aPlayer.gotFlag.visible) {
+      var flag = yourTeam == 'a' ? blueFlag : redFlag;
+      flag.position.x = aPlayer.sprite.position.x - map.position.x;
+      flag.position.y = aPlayer.sprite.position.y - map.position.y; 
+      flag.visible = true;
+
+      player.gotFlag.visible = false;
+      socket.emit('drop', {
+        x: aPlayer.sprite.position.x - map.position.x,
+        y: aPlayer.sprite.position.y - map.position.y
+      });
+    }
     setStartCoords(yourTeam);
   }
 }
@@ -245,7 +276,6 @@ function collidesBullet(bullet, object) {
       return true;
     }
   }
-
   return false;
 }
 
@@ -261,12 +291,12 @@ function networkUpdate() {
     }
 
     if (!player.sprite) {
-      var newP = createPlayer();
+      var newP = createPlayer(player.team);
       player.sprite = newP.sprite;
       player.dude = newP.dude;
       player.nick = newP.nick;
+      player.gotFlag = newP.gotFlag;
       map.addChild(player.sprite);
-      player.dude.play();
     }
 
     if (newNicks[key]) {
@@ -274,8 +304,22 @@ function networkUpdate() {
       delete newNicks[key];
     }
 
-    player.sprite.position.x = player.x;
-    player.sprite.position.y = player.y;
+
+    if (player.sprite.position.x !== player.x || player.sprite.position.y !== player.y) {
+      var deltaX = player.x - player.sprite.position.x;
+      var deltaY = player.y - player.sprite.position.y;
+      var desiRot = Math.atan2(deltaY, deltaX);
+      rotate(player.dude, desiRot);
+
+      if (Math.abs(deltaX) > 10 || Math.abs(deltaY) > 10) rotate(player.dude, desiRot);
+
+      player.sprite.position.x = player.x;
+      player.sprite.position.y = player.y;
+
+      player.dude.play();
+    } else {
+      player.dude.stop();
+    }
   }
 }
 
@@ -359,25 +403,35 @@ function move(x, y) {
   map.position.x += x * SPEED;
   map.position.y += y * SPEED;
 
-  if (gotFlag(map.position.x, map.position.y)) {
-    player.sprite.hasFlag = true;
-    socket.emit('got');
+  var enemyFlag = yourTeam == 'a' ? blueFlag : redFlag;
+  var yourFlag = yourTeam == 'a' ? redFlag : blueFlag;
+  var coords = yourTeam == 'a' ? flagCoords.redFlag : flagCoords.blueFlag;
+
+  if (collideFlag(map.position.x, map.position.y, enemyFlag.position.x, enemyFlag.position.y)) {
+    if (enemyFlag.visible) {
+      player.gotFlag.visible = true;
+      enemyFlag.visible = false;
+      socket.emit('got');
+    }
+  }
+  if (collideFlag(map.position.x, map.position.y, coords.x, coords.y) && player.gotFlag.visible) {
+    player.gotFlag.visible = false;
+    enemyFlag.visible = true;
+    socket.emit('point');
+  } else if (collideFlag(map.position.x, map.position.y, yourFlag.position.x, yourFlag.position.y)) {
+    yourFlag.position.x = coords.x;
+    yourFlag.position.y = coords.y;
+    socket.emit('return');
   }
   return true;
 }
 
-function gotFlag(posX, posY) {
-  var enemyFlag = yourTeam == 'a' ? blueFlag : redFlag;
+function collideFlag(posX, posY, flagX, flagY) {
   posX = player.sprite.position.x - posX;
   posY = player.sprite.position.y - posY;
-  if (posX + player.sprite._width > enemyFlag.position.x && posX < enemyFlag.position.x + 10)
-    if (posY + player.sprite._height > enemyFlag.position.y && posY < enemyFlag.position.y + 10) {
-      if (enemyFlag.visible) {
-        enemyFlag.visible = false;
-        return true;
-      }
-      return false;
-    }
+  if (posX + player.sprite._width > flagX && posX < flagX + 20)
+    if (posY + player.sprite._height > flagY && posY < flagY + 20)
+      return true;
   return false;
 }
 
@@ -402,7 +456,7 @@ function collides(obj, player, offsetX, offsetY) {
 }
 
 function rotate(player, desiredRot) {
-  if (!desiredRot) return;
+  if (desiredRot === undefined) return;
 
   var playRot = toDegrees(player.rotation) || 360;
   var desiRot = toDegrees(desiredRot) || 360;
@@ -474,10 +528,12 @@ function startIO() {
   socket = io.connect();
 
   socket.on('conn', function (data) {
-    console.log(data);
+    player = createPlayer(data.team);
+    stage.addChild(player.sprite);
+
     gameInProgress = data.go;
     if (!gameInProgress) {
-      $('#countdown').text('WAITING FOR PLAYERS');
+      $('#countdown').text('WAITING FOR PLAYERS TO JOIN');
       intro.play().fade(0, 1);
     } else {
       gameMusic.play();
@@ -500,8 +556,34 @@ function startIO() {
   });
 
   socket.on('got', function (data) {
-    console.log(data);
-    var flag = data.team == 'a' ? blueFlag : redFlag
+    var flag = data.team == 'a' ? blueFlag : redFlag;
+    flag.visible = false;
+    console.log(players[data.id]);
+    players[data.id].gotFlag.visible = true;
+  });
+
+  socket.on('drop', function (data) {
+    players[data.id].gotFlag.visible = false;
+    var flag = players[data.id].team == 'a' ? blueFlag : redFlag;
+    flag.position.x = data.x;
+    flag.position.y = data.y;
+    flag.visible = true;
+  });
+
+  socket.on('return', function (data) {
+    var flag = players[data.id].team == 'a' ? redFlag : blueFlag;
+    var coords = players[data.id].team == 'a' ? flagCoords.redFlag : flagCoords.blueFlag;
+    flag.position.x = coords.x;
+    flag.position.y = coords.y;
+    players[data.id].gotFlag.visible = false;
+  });
+
+  socket.on('point', function (data) {
+    var enemyFlag = players[data.id].team == 'a' ? blueFlag : redFlag;
+    var coords = players[data.id].team == 'a' ? flagCoords.blueFlag : flagCoords.redFlag;
+    enemyFlag.position.x = coords.x;
+    enemyFlag.position.y = coords.y;
+    enemyFlag.visible = true;
   });
 
   socket.on('dis', function (data) {
@@ -532,7 +614,7 @@ function startIO() {
     intro.play();
     gameInProgress = false;
     setStartCoords(yourTeam);
-    $('#countdown').text('WAITING FOR PLAYERS');
+    $('#countdown').text('WAITING FOR PLAYERS TO JOIN');
     if (t) clearInterval(t);
     $('#timer').text('');
   });
