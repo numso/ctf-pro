@@ -781,6 +781,7 @@ function startIO() {
     if (data.nick) {
       newNicks[data.id] = data.nick;
       drawTeams();
+      return;
     }
 
     var text = (data.id === -1) ? data.msg : (data.name + ': ' + data.msg);
