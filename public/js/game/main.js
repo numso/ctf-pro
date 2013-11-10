@@ -682,7 +682,6 @@ function setNick(nick, aPlayer) {
 function startIO() {
   socket = io.connect();
   socket.on('conn', function (data) {
-    console.log(data);
     player = createPlayer(data.team);
     stage.addChild(player.sprite);
 
@@ -708,23 +707,26 @@ function startIO() {
     if (data.teams.a.flag) {
       if (data.teams.a.flag.id) {
         players[data.teams.a.flag.id].gotFlag.visible = true;
-        redFlag.visible = false;
+        blueFlag.visible = false;
       } else {
-        redFlag.position.x = data.teams.a.flag.x;
-        redFlag.position.y = data.teams.a.flag.y;
+        blueFlag.position.x = data.teams.a.flag.x;
+        blueFlag.position.y = data.teams.a.flag.y;
+        blueFlag.visible = true;
       }
     }
 
     if (data.teams.b.flag) {
       if (data.teams.b.flag.id) {
         players[data.teams.b.flag.id].gotFlag.visible = true;
-        blueFlag.visible = false;
+        redFlag.visible = false;
       } else {
-        blueFlag.position.x = data.teams.b.flag.x;
-        blueFlag.position.y = data.teams.b.flag.y;
+        redFlag.position.x = data.teams.b.flag.x;
+        redFlag.position.y = data.teams.b.flag.y;
+        redFlag.visible = true;
       }
     }
 
+    console.log(data);
     setKills(data.teams.a.kills, data.teams.b.kills);
     setScores(data.teams.a.points, data.teams.b.points);
   });
