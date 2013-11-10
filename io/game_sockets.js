@@ -203,11 +203,11 @@ function connect(socket) {
     msg: 'Welcome to CTF Pro! Press "t" to chat!'
   });
 
-  // socket.emit('msg', {
-  //   id: -1,
-  //   name: 'Admin',
-  //   msg: 'Please don\'t forget to vote for us! Just click on the button in the bottom right corner of this page.'
-  // });
+  socket.emit('msg', {
+    id: -1,
+    name: 'Admin',
+    msg: 'Like the game? Please vote for us at the bottom of the screen!'
+  });
 
   socket.broadcast.emit('new', {
     id: user.id,
