@@ -144,7 +144,7 @@ function setKills(red, blue) {
 
   redKills.position.x = 75;
   redKills.position.y = 60;
-  blueKills.position.x = 1300;
+  blueKills.position.x = 1329 - blueKills.width;
   blueKills.position.y = 60;
 
   stage.addChild(redKills);
