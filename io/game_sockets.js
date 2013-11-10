@@ -375,7 +375,7 @@ function connect(socket) {
       msg.msg = oldNick + ' is now known as ' + newNick;
       msg.nick = newNick;
 
-      if(!user.username){
+      if(!user.nickname){
         socket.broadcast.emit('msg', {
           id: -1,
           name: 'Admin',
