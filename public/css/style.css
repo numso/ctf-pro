@@ -10,6 +10,7 @@ canvas {
 #header {
   position: relative;
   z-index: 1;
+  text-align: center;
 }
 #footer {
   background-color: #add8e6;
@@ -43,15 +44,17 @@ canvas {
 }
 #timer {
   text-align: center;
-  padding-top: 25px;
+  margin-top: 15px;
   font-size: 36px;
+  background-color: #fff;
+  display: inline-block;
+  padding: 20px;
 }
 h1 {
   float: left;
 }
 button {
-  float: right;
-  margin-right: 10px;
+  margin-left: 10px;
   margin-top: 10px;
 }
 .a {
