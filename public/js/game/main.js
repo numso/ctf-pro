@@ -1,4 +1,4 @@
-/* global PIXI, $, requestAnimationFrame, TESTMAP, io, console, _, Howl, Howler */
+/* global PIXI, $, requestAnimationFrame, TESTMAP, io, _, Howl, Howler */
 'use strict';
 
 window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || function (cb) { window.setTimeout(cb, 1000 / 60); };
@@ -35,8 +35,6 @@ var redIcon, blueIcon;
 var blueScore, redScore;
 var blueKillsIcon, redKillsIcon;
 var redKills, blueKills;
-var kills;
-var playerNames = {};
 var inputs = [];
 var obstacles = [];
 var blueSideTele, redSideTele;
@@ -397,10 +395,10 @@ function loopBullets() {
 
   var pseudoPlayer = {
     position: {
-      x: player.sprite.position.x - map.position.x,
-      y: player.sprite.position.y - map.position.y,
-      w: 20,
-      h: 20
+      x: player.sprite.position.x - map.position.x - 10,
+      y: player.sprite.position.y - map.position.y - 10,
+      w: 30,
+      h: 30
     }
   };
 
@@ -498,7 +496,6 @@ function networkUpdate() {
       refreshNickFlag = true;
       delete newNicks[key];
     }
-
 
     if (player.sprite.position.x !== player.x || player.sprite.position.y !== player.y) {
       var deltaX = player.x - player.sprite.position.x;
@@ -787,7 +784,8 @@ function startIO() {
       intro.play().fade(0, 1);
     } else {
       gameMusic.play();
-      $('#timer').text('Calculating Time Remaining...');
+      data.time = data.time || { min: 15 };
+      setTimer(data.time.min, data.time.sec);
     }
     yourTeam = data.team;
     setStartCoords(yourTeam, true);
@@ -803,7 +801,6 @@ function startIO() {
 
     if (data.teams.a.flag) {
       if (data.teams.a.flag.id) {
-        console.log(data.teams.a.flag.id);
         players[data.teams.a.flag.id].iHazDaFlag = true;
         blueFlag.visible = false;
       } else {
@@ -815,7 +812,6 @@ function startIO() {
 
     if (data.teams.b.flag) {
       if (data.teams.b.flag.id) {
-        console.log(data.teams.b.flag.id);
         players[data.teams.b.flag.id].iHazDaFlag = true;
         redFlag.visible = false;
       } else {
@@ -890,8 +886,14 @@ function startIO() {
   });
 
   socket.on('stop', function (data) {
-    var winner = data.teams.a.points > data.teams.b.points ? "Red" : "Blue";
-    $banner.text(winner + ' Team Wins!');
+    var winner = data.teams.a.points > data.teams.b.points ? 'Red Team Wins!' : 'Blue Team Wins!';
+    if (data.teams.a.points === data.teams.b.points) {
+      winner = data.teams.a.kills > data.teams.b.kills ? 'Red Team Wins!' : 'Blue Team Wins!';
+      if (data.teams.a.kills === data.teams.b.kills) {
+        winner = 'Tie Game!';
+      }
+    }
+    $banner.text(winner);
     $banner.show();
     gameMusic.stop();
     intro.play();
@@ -954,9 +956,9 @@ function getCoords(id, x, y) {
 }
 
 var t;
-function setTimer(num) {
-  var mins = num;
-  var secs = 0;
+function setTimer(min, sec) {
+  var mins = min;
+  var secs = sec || 0;
   if (t) clearInterval(t);
   t = setInterval(function () {
     secs -= 1;
