@@ -42,3 +42,13 @@ button {
   margin-right: 10px;
   margin-top: 10px;
 }
+#alerts.a {
+  color: #f00;
+  background-color: rgba(0,0,0,0.5);
+  padding: 20px;
+}
+#alerts.b {
+  color: #6e6eff;
+  background-color: rgba(0,0,0,0.5);
+  padding: 20px;
+}

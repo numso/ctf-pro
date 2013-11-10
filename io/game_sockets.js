@@ -178,6 +178,12 @@ function connect(socket) {
   teams[team].users[id] = user;
   users[id] = user;
 
+  socket.emit('chat', {
+    id: -1,
+    name: 'Admin',
+    msg: 'Welcome to CFG Pro! Press "t" to chat!'
+  });
+
   socket.broadcast.emit('new', {
     id: user.id,
     team: team
