@@ -623,9 +623,7 @@ function move(x, y) {
 
   var teleport = collideTele(player.sprite.position.x - map.position.x, player.sprite.position.y - map.position.y, player);
   if (teleport.go) {
-    console.log('hit tele!!');
     var destination = teleport.dest == 'red' ? teleporterCoords.redSide.sink : teleporterCoords.blueSide.sink;
-    console.log(map.position.x, destination.x, player.sprite.position.x);
     map.position.x = player.sprite.position.x - destination.x;
     map.position.y = player.sprite.position.y - destination.y;
   }
