@@ -713,6 +713,7 @@ function startIO() {
       intro.play().fade(0, 1);
     } else {
       gameMusic.play();
+      $('#timer').text('Calculating Time Remaining...');
     }
     yourTeam = data.team;
     setStartCoords(yourTeam, true);
