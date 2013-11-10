@@ -18,6 +18,10 @@ module.exports = function (io) {
   io.sockets.on('connection', connect);
 };
 
+var flags = {
+  a: {},
+  b: {}
+};
 var users = {};
 var teams = {
   a: {
@@ -166,7 +170,9 @@ function connect(socket) {
         points: teams.b.points,
         users: teams.b.users
       }
-    }
+    },
+    aflag: flags.a,
+    bflag: flags.b
   });
 
 
@@ -193,6 +199,21 @@ function connect(socket) {
 
     if(--game.active < 2){
       stopGame();
+    }
+
+    if(flags[team].id && flags[team].id === user.id){
+      socket.broadcast.emit('drop', {
+        id: user.id,
+        x: user.x,
+        y: user.y
+      });
+
+      flags[team] = {
+        x: user.x,
+        y: user.y
+      };
+
+      alert((user.nickname || user.id) + ' has dropped the flag!');
     }
 
     delete teams[team].users[user.id];
@@ -284,6 +305,10 @@ function connect(socket) {
       team: team
     });
 
+    flags[team] = {
+      id: user.id
+    };
+
     alert((user.nickname || user.id) + ' has stolen the flag!');
   });
 
@@ -297,6 +322,11 @@ function connect(socket) {
       y: data.y
     });
 
+    flags[team] = {
+      x: data.x,
+      y: data.y
+    };
+
     alert((user.nickname || user.id) + ' has dropped the flag!');
   });
 
@@ -305,6 +335,9 @@ function connect(socket) {
       id: user.id,
       team: team
     });
+
+    delete flags[team].x;
+    delete flags[team].y;
 
     alert((user.nickname || user.id) + ' has returned the flag!');
   });
