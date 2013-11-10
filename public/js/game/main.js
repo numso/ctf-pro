@@ -280,6 +280,7 @@ function networkUpdate() {
       player.sprite = newP.sprite;
       player.dude = newP.dude;
       player.nick = newP.nick;
+      player.gotFlag = newP.gotFlag;
       map.addChild(player.sprite);
       player.dude.play();
     }
@@ -523,6 +524,7 @@ function startIO() {
   socket.on('got', function (data) {
     var flag = data.team == 'a' ? blueFlag : redFlag;
     flag.visible = false;
+    console.log(players[data.id]);
     players[data.id].gotFlag.visible = true;
   });
 
