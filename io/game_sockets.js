@@ -72,7 +72,7 @@ function gameleft(togo){ //togo is minutes
     stopGame();
 
     game.countdown = true;
-    countdown(15);
+    countdown(5);
   } else {
     mainIO.sockets.emit('togo', {
       min: togo
@@ -151,7 +151,7 @@ function connect(socket) {
 
   if(++game.active >= 2 && !game.countdown && !game.started){
     game.countdown = true;
-    countdown(10);
+    countdown(5);
   }
 
   socket.emit('conn', {
@@ -216,12 +216,15 @@ function connect(socket) {
       b: teams.b.points
     };
 
-    if(teams[team].points === 3){
-      stopGame();
-    }
 
     socket.emit('point', result);
     socket.broadcast.emit('point', result);
+
+    if (teams[team].points === 3){
+      stopGame();
+      game.countdown = true;
+      countdown(5);
+    }
   });
 
   socket.on('shot', function(data){
