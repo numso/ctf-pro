@@ -18,10 +18,7 @@ module.exports = function (io) {
   io.sockets.on('connection', connect);
 };
 
-var flags = {
-  a: {},
-  b: {}
-};
+var flags = {};
 var users = {};
 var teams = {
   a: {
@@ -94,6 +91,8 @@ function stopGame(){
 }
 
 function resetGame(){
+  flags = {};
+
   _.each(game, function(element, index, list){
     if(typeof element === 'number' && index != 'active'){
       list[index] = 0;
@@ -201,7 +200,7 @@ function connect(socket) {
       stopGame();
     }
 
-    if(flags[team].id && flags[team].id === user.id){
+    if(flags[team] && flags[team].id && flags[team].id === user.id){
       socket.broadcast.emit('drop', {
         id: user.id,
         x: user.x,
@@ -336,8 +335,7 @@ function connect(socket) {
       team: team
     });
 
-    delete flags[team].x;
-    delete flags[team].y;
+    delete flags[team];
 
     alert((user.nickname || user.id) + ' has returned the flag!');
   });
