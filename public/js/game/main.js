@@ -28,8 +28,10 @@ var renderer;
 var stage;
 var map;
 var player;
+var redFlag, blueFlag;
 var inputs = [];
 var obstacles = [];
+
 
 var intro = new Howl({
     urls: ['/snd/intro.mp3'],
@@ -67,6 +69,11 @@ function loadGame() {
   player = createPlayer();
   stage.addChild(player.sprite);
 
+  redFlag = createFlag('/img/redFlag.png', 50, 1100);
+  blueFlag = createFlag('/img/blueFlag.png', 7885, 860);
+  map.addChild(redFlag);
+  map.addChild(blueFlag);
+
   startIO();
 
   requestAnimationFrame(animate);
@@ -99,6 +106,16 @@ function createPlayer() {
     dude: playerSprite,
     nick: nickName
   };
+}
+
+function createFlag(location, x, y) {
+  var flagTexture = new PIXI.Texture.fromImage(location);
+  var flag = new PIXI.Sprite(flagTexture);
+
+  flag.position.x = x;
+  flag.position.y = y;
+
+  return flag;
 }
 
 function createMap() {
