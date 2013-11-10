@@ -8,7 +8,7 @@ var SPEED = 10;
 var BULLETSPEED = 3;
 var newNicks = {};
 
-var assets = ['resources/player.json', 'resources/player2.json', 'img/bottom.png', 'img/middle.png', '/img/redFlag.png', '/img/blueFlag.png'];
+var assets = ['resources/player.json', 'resources/player2.json', 'img/bottom.png', 'img/middle.png', '/img/redFlag.png', '/img/blueFlag.png', '/img/blueFlagIcon.png', '/img/redFlagIcon.png'];
 var loader = new PIXI.AssetLoader(assets);
 loader.onComplete = function () {
   loadGame();
@@ -28,6 +28,8 @@ var stage;
 var map;
 var player;
 var redFlag, blueFlag;
+var redIcon;
+var blueIcon;
 var inputs = [];
 var obstacles = [];
 var flagCoords = {
@@ -81,8 +83,15 @@ function loadGame() {
 
   redFlag = createFlag('/img/redFlag.png', flagCoords.redFlag.x, flagCoords.redFlag.y);
   blueFlag = createFlag('/img/blueFlag.png', flagCoords.blueFlag.x, flagCoords.blueFlag.y);
+
   map.addChild(redFlag);
   map.addChild(blueFlag);
+
+  redIcon = createIcon('/img/redFlagIcon.png', 0, 0);
+  blueIcon = createIcon('/img/blueFlagIcon.png', 1350, 0);
+
+  stage.addChild(redIcon);
+  stage.addChild(blueIcon);
 
   startIO();
 
@@ -137,6 +146,16 @@ function createFlag(location, x, y) {
   flag.position.y = y;
   flag.pivot.x = 50;
   flag.pivot.y = 40;
+  return flag;
+}
+
+function createIcon(location, x, y) {
+  var iconTexture = new PIXI.Texture.fromImage(location);
+  var flag = new PIXI.Sprite(iconTexture);
+  flag.position.x = x;
+  flag.position.y = y;
+  flag.width = 50;
+  flag.height = 50;
   return flag;
 }
 
@@ -418,7 +437,8 @@ function move(x, y) {
     player.gotFlag.visible = false;
     enemyFlag.visible = true;
     socket.emit('point');
-  } else if (collideFlag(map.position.x, map.position.y, yourFlag.position.x, yourFlag.position.y)) {
+  } else if (collideFlag(map.position.x, map.position.y, yourFlag.position.x, yourFlag.position.y)
+    && yourFlag.position.x != coords.x && yourFlag.position.y != coords.y) {
     yourFlag.position.x = coords.x;
     yourFlag.position.y = coords.y;
     socket.emit('return');
@@ -558,7 +578,6 @@ function startIO() {
   socket.on('got', function (data) {
     var flag = data.team == 'a' ? blueFlag : redFlag;
     flag.visible = false;
-    console.log(players[data.id]);
     players[data.id].gotFlag.visible = true;
   });
 
