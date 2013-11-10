@@ -268,7 +268,7 @@ function createPlayer(team) {
   player._height = 20;
 
   var gotFlagBubble = new PIXI.Graphics();
-  gotFlagBubble.beginFill(team === 'a' ? '0x0000FF' : '0xFF0000', 0.4);
+  gotFlagBubble.beginFill(team === 'a' ? '0xFF0000' : '0x0000FF', 0.4);
   gotFlagBubble.drawCircle(0, 0, 50);
   gotFlagBubble.position.x = 3;
   gotFlagBubble.position.y = -1;
