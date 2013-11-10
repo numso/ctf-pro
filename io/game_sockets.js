@@ -363,7 +363,8 @@ function connect(socket) {
       team: team
     });
 
-    delete flags[team];
+    var enemyTeam = team === 'a' ? 'b' : 'a';
+    delete flags[enemyTeam];
 
     alert((user.nickname || user.id) + ' has returned the flag!');
   });
