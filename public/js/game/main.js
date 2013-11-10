@@ -1,11 +1,11 @@
-/* global PIXI, $, requestAnimationFrame, TESTMAP, io, console, _, Howl */
+/* global PIXI, $, requestAnimationFrame, TESTMAP, io, console, _, Howl, Howler */
 'use strict';
 
 window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || function (cb) { window.setTimeout(cb, 1000 / 60); };
 
 var names = ['Donut', 'Penguin', 'Stumpy', 'Whicker', 'Shadow', 'Howard', 'Wilshire', 'Darling', 'Disco', 'Jack', 'The Bear', 'Sneak', 'The Big L', 'Whisp', 'Wheezy', 'Crazy', 'Goat', 'Pirate', 'Saucy', 'Hambone', 'Butcher', 'Walla Walla', 'Snake', 'Caboose', 'Sleepy', 'Killer', 'Stompy', 'Mopey', 'Dopey', 'Weasel', 'Ghost', 'Dasher', 'Grumpy', 'Hollywood', 'Tooth', 'Noodle', 'King', 'Cupid', 'Prancer'];
 var SPEED = 10;
-var BULLETSPEED = 30;
+var BULLETSPEED = 3;
 var newNicks = {};
 
 var assets = ['resources/player.json', 'img/bottom.png', 'img/middle.png', '/img/redFlag.png', '/img/blueFlag.png'];
@@ -35,11 +35,13 @@ var obstacles = [];
 
 var intro = new Howl({
     urls: ['/snd/intro.mp3'],
+    autoplay: false,
     loop: true
   });
 
 var gameMusic = new Howl({
   urls: ['/snd/gameMusic.mp3'],
+  autoplay: false,
   loop: true
 });
 
@@ -47,12 +49,10 @@ var muted = false;
 $('#muteButton').click(function () {
   muted = !muted;
   if (muted) {
-    intro.mute();
-    gameMusic.mute();
+    Howler.mute();
     $(this).text('Unmute');
   } else {
-    gameMusic.unmute();
-    intro.unmute();
+    Howler.unmute();
     $(this).text('Mute');
   }
 });
@@ -79,10 +79,13 @@ function loadGame() {
   requestAnimationFrame(animate);
 }
 
-function createPlayer() {
+function createPlayer(team) {
+  team = team || 'a';
+
   var playerList = [];
+  console.log(PIXI.TextureCache);
   for (var i = 0; i < 3; ++i) {
-    playerList.push(new PIXI.Texture.fromFrame(i));
+    playerList.push(new PIXI.Texture.fromFrame(team + i));
   }
   var player = new PIXI.DisplayObjectContainer();
   player.position.x = 700;
@@ -174,44 +177,45 @@ function loadMapTextures() {
 
 function animate() {
   renderer.render(stage);
-  requestAnimationFrame(animate);
   if (gameInProgress) {
     playerMovement(inputs);
-    if (gunCoolDown > 0)
-      gunCoolDown -= 1;
+    if (gunCoolDown > 0) --gunCoolDown;
     loopBullets();
   }
   networkUpdate();
+  requestAnimationFrame(animate);
 }
 
 function loopBullets() {
   var playerDeath = false;
+
+  var pseudoPlayer = {
+    position: {
+      x: player.sprite.position.x - map.position.x,
+      y: player.sprite.position.y - map.position.y,
+      w: 20,
+      h: 20
+    }
+  };
+
   for (var i = 0; i < bullets.length; ++i) {
     var bullet = bullets[i];
-
-    bullet.spr.position.x += bullet.dx;
-    bullet.spr.position.y += bullet.dy;
-
     var bulletDeath = false;
+
+    for (var k = 0; k < BULLETSPEED; ++k) {
+      bullet.spr.position.x += bullet.dx;
+      bullet.spr.position.y += bullet.dy;
+
+      if (!bulletDeath && bullet.id !== 'me' && collidesBullet(bullet.spr, pseudoPlayer)) {
+        bulletDeath = true;
+        playerDeath = bullet.id;
+      }
+    }
 
     for (var j = 0; j < obstacles.length && !bulletDeath; ++j) {
       if (collidesBullet(bullet.spr, obstacles[j])) {
         bulletDeath = true;
       }
-    }
-
-    var pseudoPlayer = {
-      position: {
-        x: 0,
-        y: 0,
-        w: 20,
-        h: 20
-      }
-    };
-
-    if (!bulletDeath && bullet.id !== 'me' && collidesBullet(bullet.spr, pseudoPlayer)) {
-      bulletDeath = true;
-      playerDeath = true;
     }
 
     if (bulletDeath) {
@@ -221,7 +225,14 @@ function loopBullets() {
   }
 
   if (playerDeath) {
-    console.log('KILL THE PLAYER');
+    socket.emit('died', { id: playerDeath });
+    deathSequence(player);
+  }
+}
+
+function deathSequence(aPlayer) {
+  if (aPlayer === player) {
+    setStartCoords(yourTeam);
   }
 }
 
@@ -229,8 +240,8 @@ function collidesBullet(bullet, object) {
   var bp = bullet.position;
   var op = object.position;
 
-  if (bp.x < op.x + (op.w || 40) && op.x < bp.x + 4) {
-    if (bp.y < op.y + (op.h || 40) && op.y < bp.y + 4) {
+  if (bp.x - 10 < op.x + (op.w || 40) && op.x < bp.x + 10) {
+    if (bp.y - 10 < op.y + (op.h || 40) && op.y < bp.y + 10) {
       return true;
     }
   }
@@ -334,8 +345,8 @@ function createBullet(data) {
 
   return {
     id: data.id || 'me',
-    dx: Math.sin(toRadians(-data.d)) * BULLETSPEED,
-    dy: Math.cos(toRadians(-data.d)) * BULLETSPEED,
+    dx: Math.sin(toRadians(-data.d)) * SPEED,
+    dy: Math.cos(toRadians(-data.d)) * SPEED,
     spr: spr
   };
 }

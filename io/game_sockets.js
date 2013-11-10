@@ -263,7 +263,8 @@ function connect(socket) {
     ++game.stole;
 
     socket.broadcast.emit('got', {
-      id: user.id
+      id: user.id,
+      team: team
     });
   });
 
