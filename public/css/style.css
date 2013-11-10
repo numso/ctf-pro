@@ -79,4 +79,5 @@ button {
   z-index: 2;
   left: 0;
   width: 400px;
+  display: none;
 }

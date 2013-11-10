@@ -773,6 +773,7 @@ function killMsgBox() {
 }
 
 function focusMsgBox(msg) {
+  if (chatHidden) hideChat();
   $chatBox.show();
   $chatBox.focus();
   setTimeout(function () {
