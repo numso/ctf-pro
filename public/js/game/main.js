@@ -610,12 +610,14 @@ function move(x, y) {
     }
   }
   if (collideFlag(map.position.x, map.position.y, yourCoords.x, yourCoords.y) && player.gotFlag.visible) {
-    player.gotFlag.visible = false;
-    enemyFlag.position.x = enemyCoords.x;
-    enemyFlag.position.y = enemyCoords.y;
-    enemyFlag.visible = true;
-    socket.emit('point');
-  }else if (collideFlag(map.position.x, map.position.y, yourFlag.position.x, yourFlag.position.y) && yourFlag.position.x != yourCoords.x && yourFlag.position.y != yourCoords.y) {
+    if (enemyFlag.visible && enemyFlag.position.x == enemyCoords.position.x && enemyFlag.position.y == enemyCoords.position.y) {
+      player.gotFlag.visible = false;
+      enemyFlag.position.x = enemyCoords.x;
+      enemyFlag.position.y = enemyCoords.y;
+      enemyFlag.visible = true;
+      socket.emit('point');
+    }
+  } else if (collideFlag(map.position.x, map.position.y, yourFlag.position.x, yourFlag.position.y) && yourFlag.position.x != yourCoords.x && yourFlag.position.y != yourCoords.y) {
     yourFlag.position.x = yourCoords.x;
     yourFlag.position.y = yourCoords.y;
     socket.emit('return');
@@ -771,6 +773,9 @@ function resetFlags() {
   redFlag.position.y = flagCoords.redFlag.y;
   blueFlag.position.x = flagCoords.blueFlag.x;
   blueFlag.position.y = flagCoords.blueFlag.y;
+
+  redFlag.visible = true;
+  blueFlag.visible = true;
 
   player.gotFlag.visible = false;
   for (var key in players) {
