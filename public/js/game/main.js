@@ -758,7 +758,12 @@ $chatBox.on('keydown', function (e) {
   } else if (e.keyCode === 13) {
     var msg = $chatBox.val();
     console.log(msg);
-    if (msg) socket.emit('chat', { msg: msg });
+    if (msg) {
+      socket.emit('chat', { msg: msg });
+      if (msg.indexOf('/setNick ') === 0) {
+        setNick(msg.replace('/setNick ', ''), player);
+      }
+    }
     $chatBox.blur();
   }
 
