@@ -38,7 +38,7 @@ var flagCoords = {
   blueFlag: {
     x: 7935,
     y: 890
-  } 
+  }
 };
 
 
@@ -56,19 +56,23 @@ var gameMusic = new Howl({
 
 var muted = false;
 $('#muteButton').click(function () {
+  var $this = $(this);
   muted = !muted;
   if (muted) {
     Howler.mute();
-    $(this).text('Unmute');
+    $this.text('Unmute');
   } else {
     Howler.unmute();
-    $(this).text('Mute');
+    $this.text('Mute');
   }
+  $this.blur();
 });
 
 function loadGame() {
   renderer = new PIXI.autoDetectRenderer(1400, 600);
   $('#view').after(renderer.view);
+  $(renderer.view).addClass('center');
+
   stage = new PIXI.Stage();
 
   loadMapTextures();
@@ -293,7 +297,6 @@ function networkUpdate() {
       player.nick = newP.nick;
       player.gotFlag = newP.gotFlag;
       map.addChild(player.sprite);
-      player.dude.play();
     }
 
     if (newNicks[key]) {
@@ -301,8 +304,22 @@ function networkUpdate() {
       delete newNicks[key];
     }
 
-    player.sprite.position.x = player.x;
-    player.sprite.position.y = player.y;
+
+    if (player.sprite.position.x !== player.x || player.sprite.position.y !== player.y) {
+      var deltaX = player.x - player.sprite.position.x;
+      var deltaY = player.y - player.sprite.position.y;
+      var desiRot = Math.atan2(deltaY, deltaX);
+      rotate(player.dude, desiRot);
+
+      if (Math.abs(deltaX) > 10 || Math.abs(deltaY) > 10) rotate(player.dude, desiRot);
+
+      player.sprite.position.x = player.x;
+      player.sprite.position.y = player.y;
+
+      player.dude.play();
+    } else {
+      player.dude.stop();
+    }
   }
 }
 
@@ -438,7 +455,7 @@ function collides(obj, player, offsetX, offsetY) {
 }
 
 function rotate(player, desiredRot) {
-  if (!desiredRot) return;
+  if (desiredRot === undefined) return;
 
   var playRot = toDegrees(player.rotation) || 360;
   var desiRot = toDegrees(desiredRot) || 360;
@@ -515,7 +532,7 @@ function startIO() {
 
     gameInProgress = data.go;
     if (!gameInProgress) {
-      $('#countdown').text('WAITING FOR PLAYERS');
+      $('#countdown').text('WAITING FOR PLAYERS TO JOIN');
       intro.play().fade(0, 1);
     } else {
       gameMusic.play();
@@ -595,7 +612,7 @@ function startIO() {
     intro.play();
     gameInProgress = false;
     setStartCoords(yourTeam);
-    $('#countdown').text('WAITING FOR PLAYERS');
+    $('#countdown').text('WAITING FOR PLAYERS TO JOIN');
     if (t) clearInterval(t);
     $('#timer').text('');
   });
