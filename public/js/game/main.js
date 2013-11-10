@@ -269,6 +269,18 @@ function loopBullets() {
 
 function deathSequence(aPlayer) {
   if (aPlayer === player) {
+    if (aPlayer.gotFlag.visible) {
+      var flag = yourTeam == 'a' ? blueFlag : redFlag;
+      flag.position.x = aPlayer.sprite.position.x - map.position.x;
+      flag.position.y = aPlayer.sprite.position.y - map.position.y; 
+      flag.visible = true;
+
+      player.gotFlag.visible = false;
+      socket.emit('drop', {
+        x: aPlayer.sprite.position.x - map.position.x,
+        y: aPlayer.sprite.position.y - map.position.y
+      });
+    }
     setStartCoords(yourTeam);
   }
 }
@@ -297,11 +309,11 @@ function networkUpdate() {
     }
 
     if (!player.sprite) {
-      console.log(player);
       var newP = createPlayer(player.team);
       player.sprite = newP.sprite;
       player.dude = newP.dude;
       player.nick = newP.nick;
+      player.gotFlag = newP.gotFlag;
       map.addChild(player.sprite);
     }
 
@@ -411,26 +423,32 @@ function move(x, y) {
 
   var enemyFlag = yourTeam == 'a' ? blueFlag : redFlag;
   var yourFlag = yourTeam == 'a' ? redFlag : blueFlag;
-  if (collideFlag(map.position.x, map.position.y, enemyFlag)) {
+  var coords = yourTeam == 'a' ? flagCoords.redFlag : flagCoords.blueFlag;
+
+  if (collideFlag(map.position.x, map.position.y, enemyFlag.position.x, enemyFlag.position.y)) {
     if (enemyFlag.visible) {
       player.gotFlag.visible = true;
       enemyFlag.visible = false;
       socket.emit('got');
     }
   }
-  if (collideFlag(map.position.x, map.position.y, yourFlag) && player.gotFlag.visible) {
+  if (collideFlag(map.position.x, map.position.y, coords.x, coords.y) && player.gotFlag.visible) {
     player.gotFlag.visible = false;
     enemyFlag.visible = true;
     socket.emit('point');
+  } else if (collideFlag(map.position.x, map.position.y, yourFlag.position.x, yourFlag.position.y)) {
+    yourFlag.position.x = coords.x;
+    yourFlag.position.y = coords.y;
+    socket.emit('return');
   }
   return true;
 }
 
-function collideFlag(posX, posY, enemyFlag) {
+function collideFlag(posX, posY, flagX, flagY) {
   posX = player.sprite.position.x - posX;
   posY = player.sprite.position.y - posY;
-  if (posX + player.sprite._width > enemyFlag.position.x && posX < enemyFlag.position.x + 20)
-    if (posY + player.sprite._height > enemyFlag.position.y && posY < enemyFlag.position.y + 20)
+  if (posX + player.sprite._width > flagX && posX < flagX + 20)
+    if (posY + player.sprite._height > flagY && posY < flagY + 20)
       return true;
   return false;
 }
@@ -558,11 +576,24 @@ function startIO() {
   socket.on('got', function (data) {
     var flag = data.team == 'a' ? blueFlag : redFlag;
     flag.visible = false;
+    console.log(players[data.id]);
     players[data.id].gotFlag.visible = true;
   });
 
-  socket.on('return', function (data) {
+  socket.on('drop', function (data) {
+    players[data.id].gotFlag.visible = false;
+    var flag = players[data.id].team == 'a' ? blueFlag : redFlag;
+    flag.position.x = data.x;
+    flag.position.y = data.y;
+    flag.visible = true;
+  });
 
+  socket.on('return', function (data) {
+    var flag = players[data.id].team == 'a' ? redFlag : blueFlag;
+    var coords = players[data.id].team == 'a' ? flagCoords.redFlag : flagCoords.blueFlag;
+    flag.position.x = coords.x;
+    flag.position.y = coords.y;
+    players[data.id].gotFlag.visible = false;
   });
 
   socket.on('point', function (data) {

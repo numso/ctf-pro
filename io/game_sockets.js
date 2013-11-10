@@ -178,6 +178,14 @@ function connect(socket) {
     team: team
   });
 
+  function alert(msg){
+    mainIO.sockets.emit('alert', {
+      id: user.id,
+      team: team,
+      msg: msg
+    });
+  }
+
   socket.on('disconnect', function(){
     socket.broadcast.emit('dis', {
       id: user.id
@@ -269,6 +277,8 @@ function connect(socket) {
       id: user.id,
       team: team
     });
+
+    alert((user.nickname || user.id) + ' has stolen the flag!');
   });
 
   socket.on('drop', function(data){
@@ -280,6 +290,8 @@ function connect(socket) {
       x: data.x,
       y: data.y
     });
+
+    alert((user.nickname || user.id) + ' has dropped the flag!');
   });
 
   socket.on('return', function(data){
@@ -287,6 +299,8 @@ function connect(socket) {
       id: user.id,
       team: team
     });
+
+    alert((user.nickname || user.id) + ' has returned the flag!');
   });
 
   socket.on('chat', function(data){
