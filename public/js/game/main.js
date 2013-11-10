@@ -353,10 +353,10 @@ function loopBullets() {
 
   var pseudoPlayer = {
     position: {
-      x: player.sprite.position.x - map.position.x,
-      y: player.sprite.position.y - map.position.y,
-      w: 20,
-      h: 20
+      x: player.sprite.position.x - map.position.x - 10,
+      y: player.sprite.position.y - map.position.y - 10,
+      w: 30,
+      h: 30
     }
   };
 
