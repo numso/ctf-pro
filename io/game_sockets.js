@@ -186,6 +186,12 @@ function connect(socket) {
     msg: 'Welcome to CTF Pro! Press "t" to chat!'
   });
 
+  // socket.emit('msg', {
+  //   id: -1,
+  //   name: 'Admin',
+  //   msg: 'Please don\'t forget to vote for us! Just click on the button in the bottom right corner of this page.'
+  // });
+
   socket.broadcast.emit('new', {
     id: user.id,
     team: team
@@ -262,6 +268,9 @@ function connect(socket) {
       b: teams.b.points
     };
 
+    delete flags[user.team];
+
+    alert((user.nickname || user.id) + ' has captured the flag!');
 
     socket.emit('point', result);
     socket.broadcast.emit('point', result);
@@ -354,7 +363,7 @@ function connect(socket) {
       team: team
     });
 
-    flags[team] = undefined;
+    delete flags[team];
 
     alert((user.nickname || user.id) + ' has returned the flag!');
   });
