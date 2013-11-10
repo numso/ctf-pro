@@ -9,6 +9,7 @@
 'use strict';
 
 var _ = require('underscore');
+var moment = require('moment');
 var mainIO;
 
 var currTimeout;
@@ -18,6 +19,7 @@ module.exports = function (io) {
   io.sockets.on('connection', connect);
 };
 
+var start = undefined;
 var flags = {};
 var users = {};
 var teams = {
@@ -59,6 +61,7 @@ function countdown(togo){ //togo is seconds
     game.started = true;
     game.countdown = false;
     mainIO.sockets.emit('go');
+    start = moment();
     gameleft(15);
   } else {
     mainIO.sockets.emit('countdown', {
@@ -70,6 +73,7 @@ function countdown(togo){ //togo is seconds
 
 function gameleft(togo){ //togo is minutes
   if(togo == 0){
+    start = undefined;
     stopGame();
 
     game.countdown = true;
@@ -137,6 +141,18 @@ function assignTeam(){
 }
 
 function connect(socket) {
+  var time = undefined;
+  if(start){
+    var diff = (15 * 60) - moment().diff(start, 'seconds');
+    var mins = Math.floor(diff / 60);
+    var secs = diff % 60;
+
+    time = {
+      min: mins,
+      sec: secs
+    };
+  }
+
   var id = getID();
   var team = assignTeam();
   var user = {
@@ -173,7 +189,8 @@ function connect(socket) {
         users: teams.b.users,
         flag: flags.b
       }
-    }
+    },
+    time: time
   });
 
 
