@@ -38,7 +38,7 @@ var flagCoords = {
   blueFlag: {
     x: 7935,
     y: 890
-  } 
+  }
 };
 
 
@@ -69,6 +69,8 @@ $('#muteButton').click(function () {
 function loadGame() {
   renderer = new PIXI.autoDetectRenderer(1400, 600);
   $('#view').after(renderer.view);
+  $(renderer.view).addClass('center');
+
   stage = new PIXI.Stage();
 
   loadMapTextures();
