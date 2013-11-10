@@ -56,14 +56,16 @@ var gameMusic = new Howl({
 
 var muted = false;
 $('#muteButton').click(function () {
+  var $this = $(this);
   muted = !muted;
   if (muted) {
     Howler.mute();
-    $(this).text('Unmute');
+    $this.text('Unmute');
   } else {
     Howler.unmute();
-    $(this).text('Mute');
+    $this.text('Mute');
   }
+  $this.blur();
 });
 
 function loadGame() {
