@@ -13,7 +13,7 @@ var    http = require('http'),
 
 var app = express();
 
-var port = app.get('env') === 'production' ? 80 : 3000;
+var port = process.env.PORT || 3000;
 
 app.set('port', port);
 
